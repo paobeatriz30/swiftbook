@@ -1,5 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 
+// ─── STRIPE PAYMENT LINKS ─────────────────────────────────────────────────────
+const STRIPE_LINKS = {
+  starter:  "https://buy.stripe.com/14A28sgf19gW3g68qU2sM00",
+  pro:      "https://buy.stripe.com/3cI00kfaX0Kg4kabD62sM01",
+  business: "https://buy.stripe.com/dRm3cw7Iv78Oaly8qU2sM02",
+};
+
 // ─── STORAGE LAYER (Firebase-ready — swap for Firestore in Lovable) ────────────
 const DB = {
   async get(key) {
@@ -376,7 +383,7 @@ function SignaturePad({ onSave, onCancel, isPro }) {
       </div>
       <div style={{ display:"flex", gap:10, justifyContent:"center" }}>
         <Btn variant="ghost" onClick={onCancel}>Cancel</Btn>
-        <Btn variant="gold" icon="arrow">Upgrade to Pro →</Btn>
+        <Btn variant="gold" icon="arrow" onClick={()=>window.open(STRIPE_LINKS.pro, '_blank')}>Upgrade to Pro →</Btn>
       </div>
     </div>
   );
@@ -992,7 +999,7 @@ function Settings({ onBack }) {
               </div>
             ))}
           </div>
-          <Btn variant="gold" onClick={()=>{}} icon="arrow">Upgrade Plan</Btn>
+          <Btn variant="gold" onClick={()=>window.open(STRIPE_LINKS[plan], '_blank')} icon="arrow">Upgrade Plan</Btn>
 
           {/* Cancel */}
           <div style={{ marginTop:32, paddingTop:24, borderTop:`1px solid ${C.border}` }}>
@@ -1334,7 +1341,7 @@ export default function SwiftBook() {
             <div style={{ fontFamily:FONT_BODY, fontSize:12, color:C.goldLt }}>
               ⚡ <strong>{trialDaysLeft} days left</strong> on your free trial
             </div>
-            <button onClick={()=>setView("pricing")} style={{ padding:"5px 14px", background:C.gold, color:C.ink, border:"none", borderRadius:6, fontSize:11, fontWeight:800, cursor:"pointer", fontFamily:FONT_BODY }}>
+            <button onClick={()=>window.open(STRIPE_LINKS.starter, '_blank')} style={{ padding:"5px 14px", background:C.gold, color:C.ink, border:"none", borderRadius:6, fontSize:11, fontWeight:800, cursor:"pointer", fontFamily:FONT_BODY }}>
               Upgrade Now →
             </button>
           </div>
@@ -1512,7 +1519,7 @@ function Pricing({ onSelect, onBack, expired }) {
                 </div>
 
                 {/* CTA */}
-                <button onClick={e=>{ e.stopPropagation(); onSelect(p.id); }} style={{ width:"100%", padding:"11px 0", borderRadius:10, border:`2px solid ${p.color}`, cursor:"pointer", fontFamily:FONT_BODY, fontSize:13, fontWeight:800, background:isSel?p.color:"transparent", color:isSel?C.ink:p.color, transition:"all 0.15s" }}>
+                <button onClick={e=>{ e.stopPropagation(); window.open(STRIPE_LINKS[p.id], '_blank'); }} style={{ width:"100%", padding:"11px 0", borderRadius:10, border:`2px solid ${p.color}`, cursor:"pointer", fontFamily:FONT_BODY, fontSize:13, fontWeight:800, background:isSel?p.color:"transparent", color:isSel?C.ink:p.color, transition:"all 0.15s" }}>
                   {isSel ? "Subscribe Now →" : "Select Plan"}
                 </button>
               </div>
