@@ -59,7 +59,7 @@ const FONT_BODY    = "'Inter', system-ui, sans-serif";
 
 // ─── INDUSTRIES ───────────────────────────────────────────────────────────────
 const INDUSTRIES = {
-  "🌿 Landscaping": [
+  "Landscaping": [
     { name: "Lawn Mowing",               unit: "sq ft",      price: 0.05  },
     { name: "Artificial Turf Install",   unit: "sq ft",      price: 12    },
     { name: "Sod Installation",          unit: "sq ft",      price: 1.5   },
@@ -77,7 +77,7 @@ const INDUSTRIES = {
     { name: "Grill Area Setup",          unit: "project",    price: 450   },
     { name: "PM Fee – Landscaping",      unit: "hour",       price: 95    },
   ],
-  "🏗️ Remodeling": [
+  "Remodeling": [
     { name: "Drywall / Sheetrock",       unit: "sq ft",      price: 3.5   },
     { name: "Finish Carpentry / Trim",   unit: "linear ft",  price: 6     },
     { name: "Flooring Installation",     unit: "sq ft",      price: 6     },
@@ -94,7 +94,7 @@ const INDUSTRIES = {
     { name: "General Carpentry",         unit: "hour",       price: 75    },
     { name: "PM Fee – Remodeling",       unit: "hour",       price: 110   },
   ],
-  "🔧 Plumbing": [
+  "Plumbing": [
     { name: "Pipe Repair",               unit: "hour",       price: 95    },
     { name: "Water Heater Install",      unit: "unit",       price: 850   },
     { name: "Drain Cleaning",            unit: "drain",      price: 175   },
@@ -103,7 +103,7 @@ const INDUSTRIES = {
     { name: "Water Line Install",        unit: "linear ft",  price: 12    },
     { name: "PM Fee – Plumbing",         unit: "hour",       price: 95    },
   ],
-  "🎨 Painting": [
+  "Painting": [
     { name: "Interior Painting",         unit: "sq ft",      price: 2.5   },
     { name: "Exterior Painting",         unit: "sq ft",      price: 3.2   },
     { name: "Cabinet Painting",          unit: "cabinet",    price: 85    },
@@ -112,7 +112,7 @@ const INDUSTRIES = {
     { name: "Epoxy Floor Coating",       unit: "sq ft",      price: 4     },
     { name: "PM Fee – Painting",         unit: "hour",       price: 85    },
   ],
-  "⚡ Electrical": [
+  "Electrical": [
     { name: "Outlet Installation",       unit: "outlet",     price: 150   },
     { name: "Panel Upgrade",             unit: "project",    price: 2200  },
     { name: "Light Fixture Install",     unit: "fixture",    price: 120   },
@@ -121,7 +121,7 @@ const INDUSTRIES = {
     { name: "Wiring – New Circuit",      unit: "circuit",    price: 350   },
     { name: "PM Fee – Electrical",       unit: "hour",       price: 100   },
   ],
-  "🧱 Hardscape & Concrete": [
+  "Hardscape & Concrete": [
     { name: "Concrete Patio",            unit: "sq ft",      price: 9     },
     { name: "Stamped Concrete",          unit: "sq ft",      price: 14    },
     { name: "Pool Deck",                 unit: "sq ft",      price: 12    },
@@ -135,7 +135,7 @@ const INDUSTRIES = {
     { name: "Deck Repair",               unit: "sq ft",      price: 18    },
     { name: "PM Fee – Hardscape",        unit: "hour",       price: 100   },
   ],
-  "🧹 Cleaning Services": [
+  "Cleaning Services": [
     { name: "Residential Cleaning",      unit: "sq ft",      price: 0.12  },
     { name: "Deep Cleaning",             unit: "sq ft",      price: 0.22  },
     { name: "Move In/Out Cleaning",      unit: "sq ft",      price: 0.28  },
@@ -145,7 +145,7 @@ const INDUSTRIES = {
     { name: "Carpet Cleaning",           unit: "sq ft",      price: 0.35  },
     { name: "PM Fee – Cleaning",         unit: "hour",       price: 65    },
   ],
-  "❄️ HVAC": [
+  "HVAC": [
     { name: "AC Installation",           unit: "unit",       price: 3500  },
     { name: "AC Repair",                 unit: "hour",       price: 95    },
     { name: "AC Tune-Up",                unit: "unit",       price: 120   },
@@ -154,7 +154,7 @@ const INDUSTRIES = {
     { name: "Heater Installation",       unit: "unit",       price: 2800  },
     { name: "PM Fee – HVAC",             unit: "hour",       price: 100   },
   ],
-  "🚿 Pressure Washing": [
+  "Pressure Washing": [
     { name: "Driveway Washing",          unit: "sq ft",      price: 0.35  },
     { name: "House Exterior Wash",       unit: "sq ft",      price: 0.30  },
     { name: "Deck / Patio Wash",         unit: "sq ft",      price: 0.40  },
@@ -163,7 +163,7 @@ const INDUSTRIES = {
     { name: "Commercial Washing",        unit: "sq ft",      price: 0.50  },
     { name: "PM Fee – Pressure Wash",    unit: "hour",       price: 65    },
   ],
-  "🛋️ Interior Design": [
+  "Interior Design": [
     { name: "Design Consultation",       unit: "hour",       price: 150   },
     { name: "Full Room Design",          unit: "room",       price: 1200  },
     { name: "Furniture Selection",       unit: "hour",       price: 125   },
@@ -172,7 +172,7 @@ const INDUSTRIES = {
     { name: "Project Management",        unit: "hour",       price: 150   },
     { name: "Staging",                   unit: "room",       price: 800   },
   ],
-  "🛡️ Pest Control": [
+  "Pest Control": [
     { name: "General Pest Treatment",    unit: "sq ft",      price: 0.10  },
     { name: "Termite Treatment",         unit: "linear ft",  price: 8     },
     { name: "Mosquito Treatment",        unit: "sq ft",      price: 0.08  },
@@ -181,7 +181,7 @@ const INDUSTRIES = {
     { name: "Annual Pest Plan",          unit: "year",       price: 850   },
     { name: "PM Fee – Pest Control",     unit: "hour",       price: 75    },
   ],
-  "📋 Project Management": [
+  "Project Management": [
     { name: "Site Supervision",          unit: "hour",       price: 110   },
     { name: "Project Coordination",      unit: "hour",       price: 95    },
     { name: "Permits & Inspections",     unit: "permit",     price: 350   },
@@ -193,6 +193,32 @@ const INDUSTRIES = {
     { name: "Quality Control",           unit: "visit",      price: 275   },
   ],
 };
+
+// ─── INDUSTRY ICONS ───────────────────────────────────────────────────────────
+const INDUSTRY_ICONS = {
+  "Landscaping":        { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22V12"/><path d="M5 12c0-3.87 3.13-7 7-7s7 3.13 7 7"/><path d="M3 22h18"/><path d="M7 17c0-2.76 2.24-5 5-5s5 2.24 5 5"/></svg>, color: "#10B981" },
+  "Remodeling":         { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>, color: "#C9A84C" },
+  "Plumbing":           { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v6"/><path d="M6 8h12"/><path d="M6 8c0 6-4 9-4 9h16s-4-3-4-9"/><path d="M10 22v-4h4v4"/></svg>, color: "#4A90D9" },
+  "Painting":           { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M2 13.5V19a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5.5"/><path d="M20 8l-8-5-8 5"/><path d="M12 3v18"/></svg>, color: "#E8C97E" },
+  "Electrical":         { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polygon points="13,2 3,14 12,14 11,22 21,10 12,10 13,2"/></svg>, color: "#FFD700" },
+  "Hardscape & Concrete":{ svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="15" width="20" height="7" rx="1"/><rect x="4" y="10" width="16" height="5" rx="1"/><rect x="6" y="6" width="12" height="4" rx="1"/></svg>, color: "#9E9E9E" },
+  "Cleaning Services":  { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 22l4-4m0 0l10-10M7 18l10-10m0 0l2-2a2.83 2.83 0 0 0-4-4l-2 2"/><path d="M5 8l4 4"/></svg>, color: "#4A90D9" },
+  "HVAC":               { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="4"/></svg>, color: "#4A90D9" },
+  "Pressure Washing":   { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>, color: "#4A90D9" },
+  "Interior Design":    { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M20 9V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-2"/><path d="M14 12H4"/><path d="M14 8v8"/><circle cx="20" cy="12" r="2"/></svg>, color: "#E8C97E" },
+  "Pest Control":       { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>, color: "#10B981" },
+  "Project Management": { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/><path d="M13 13h4"/><path d="M13 17h4"/></svg>, color: "#C9A84C" },
+};
+
+function IndustryIcon({ industry, size=16 }) {
+  const meta = INDUSTRY_ICONS[industry];
+  if (!meta) return null;
+  return (
+    <span style={{ width:size, height:size, display:"inline-flex", alignItems:"center", justifyContent:"center", color:meta.color, flexShrink:0 }}>
+      {React.cloneElement(meta.svg, { width:size, height:size })}
+    </span>
+  );
+}
 
 // ─── UTILITIES ────────────────────────────────────────────────────────────────
 const fmt   = (n) => `$${Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,",")}`;
@@ -638,10 +664,24 @@ function NewDoc({ onSave, onCancel, docCount }) {
         <div style={row}>
           <Field label="Company Name"><input style={inp} value={company.name} onChange={e=>setCompany({...company,name:e.target.value})} placeholder="Your business name"/></Field>
           <Field label="Industry">
-            <select style={{...inp,cursor:"pointer"}} value={company.industry} onChange={e=>setCompany({...company,industry:e.target.value})}>
-              {Object.keys(INDUSTRIES).map(k=><option key={k}>{k}</option>)}
-            </select>
-          </Field>
+              <div style={{ position:"relative" }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8, ...inp, cursor:"pointer", padding:"9px 13px" }} onClick={e=>e.currentTarget.nextSibling.style.display==="none"?e.currentTarget.nextSibling.style.display="block":e.currentTarget.nextSibling.style.display="none"}>
+                  <IndustryIcon industry={company.industry} size={16} />
+                  <span style={{ fontSize:13, color:C.white, flex:1 }}>{company.industry}</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="2"><polyline points="6,9 12,15 18,9"/></svg>
+                </div>
+                <div style={{ display:"none", position:"absolute", top:"100%", left:0, right:0, background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, zIndex:100, maxHeight:280, overflowY:"auto", marginTop:4 }}>
+                  {Object.keys(INDUSTRIES).map(k=>(
+                    <div key={k} onClick={e=>{setCompany({...company,industry:k});e.currentTarget.parentNode.style.display="none";}} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", cursor:"pointer", background:company.industry===k?C.card:"transparent", borderBottom:`1px solid ${C.border}` }}
+                      onMouseEnter={e=>e.currentTarget.style.background=C.card}
+                      onMouseLeave={e=>e.currentTarget.style.background=company.industry===k?C.card:"transparent"}>
+                      <IndustryIcon industry={k} size={16} />
+                      <span style={{ fontSize:13, color:C.white }}>{k}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Field>
         </div>
         <div style={row}>
           <Field label="Phone"><input style={inp} value={company.phone} onChange={e=>setCompany({...company,phone:e.target.value})} placeholder="(555) 000-0000"/></Field>
@@ -952,9 +992,23 @@ function Settings({ onBack }) {
             <div style={{ display:"flex", gap:12, marginBottom:14, flexWrap:"wrap" }}>
               <Field label="Company Name"><input style={inp} value={company.name} onChange={e=>setCompany({...company,name:e.target.value})} /></Field>
               <Field label="Industry">
-                <select style={{...inp,cursor:"pointer"}} value={company.industry} onChange={e=>setCompany({...company,industry:e.target.value})}>
-                  {Object.keys(INDUSTRIES).map(k=><option key={k}>{k}</option>)}
-                </select>
+                <div style={{ position:"relative" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, ...inp, cursor:"pointer" }} onClick={e=>{const d=e.currentTarget.nextSibling;d.style.display=d.style.display==="none"?"block":"none"}}>
+                    <IndustryIcon industry={company.industry} size={16} />
+                    <span style={{ fontSize:13, color:C.white, flex:1 }}>{company.industry}</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="2"><polyline points="6,9 12,15 18,9"/></svg>
+                  </div>
+                  <div style={{ display:"none", position:"absolute", top:"100%", left:0, right:0, background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, zIndex:100, maxHeight:200, overflowY:"auto", marginTop:4 }}>
+                    {Object.keys(INDUSTRIES).map(k=>(
+                      <div key={k} onClick={e=>{setCompany({...company,industry:k});e.currentTarget.parentNode.style.display="none";}} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", cursor:"pointer", borderBottom:`1px solid ${C.border}` }}
+                        onMouseEnter={e=>e.currentTarget.style.background=C.card}
+                        onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                        <IndustryIcon industry={k} size={16} />
+                        <span style={{ fontSize:13, color:C.white }}>{k}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </Field>
             </div>
             <div style={{ display:"flex", gap:12, marginBottom:14, flexWrap:"wrap" }}>
@@ -1009,7 +1063,10 @@ function Settings({ onBack }) {
               <Btn variant="danger" onClick={()=>setShowCancel(true)}>Cancel Subscription</Btn>
             ) : (
               <div style={{ background:"#1A0000", border:`1px solid #3A0000`, borderRadius:12, padding:"18px 20px" }}>
-                <div style={{ fontFamily:FONT_BODY, fontSize:13, color:C.white, marginBottom:14, fontWeight:600 }}>⚠️ Are you sure you want to cancel?</div>
+                <div style={{ fontFamily:FONT_BODY, fontSize:13, color:C.white, marginBottom:14, fontWeight:600, display:"flex", alignItems:"center", gap:8 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.danger} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  Are you sure you want to cancel?
+                </div>
                 <div style={{ fontFamily:FONT_BODY, fontSize:12, color:C.muted, marginBottom:16 }}>You'll lose access to all your documents and data at the end of your billing period.</div>
                 <div style={{ display:"flex", gap:10 }}>
                   <Btn variant="ghost" onClick={()=>setShowCancel(false)}>Keep my account</Btn>
@@ -1168,9 +1225,23 @@ function Login({ onLogin, onRegister }) {
               </div>
               <div style={{ marginBottom:12 }}>
                 <div style={{ fontFamily:FONT_BODY, fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:1, marginBottom:5 }}>Industry</div>
-                <select style={{...inp,cursor:"pointer"}} value={industry} onChange={e=>setIndustry(e.target.value)}>
-                  {Object.keys(INDUSTRIES).map(k=><option key={k}>{k}</option>)}
-                </select>
+                <div style={{ position:"relative" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, ...inp, cursor:"pointer" }} onClick={e=>{const d=e.currentTarget.nextSibling;d.style.display=d.style.display==="none"?"block":"none"}}>
+                    <IndustryIcon industry={industry} size={16} />
+                    <span style={{ fontSize:13, color:C.white, flex:1 }}>{industry}</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="2"><polyline points="6,9 12,15 18,9"/></svg>
+                  </div>
+                  <div style={{ display:"none", position:"absolute", top:"100%", left:0, right:0, background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, zIndex:100, maxHeight:200, overflowY:"auto", marginTop:4 }}>
+                    {Object.keys(INDUSTRIES).map(k=>(
+                      <div key={k} onClick={e=>{setIndustry(k);e.currentTarget.parentNode.style.display="none";}} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", cursor:"pointer", borderBottom:`1px solid ${C.border}` }}
+                        onMouseEnter={e=>e.currentTarget.style.background=C.card}
+                        onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                        <IndustryIcon industry={k} size={16} />
+                        <span style={{ fontSize:13, color:C.white }}>{k}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </>
           )}
@@ -1197,9 +1268,9 @@ function Login({ onLogin, onRegister }) {
 
           {/* Plan info on register */}
           {mode === "register" && (
-            <div style={{ marginTop:16, padding:"12px 14px", background:C.card, border:`1px solid ${C.cardBorder}`, borderRadius:8, fontFamily:FONT_BODY, fontSize:11, color:C.muted, textAlign:"center" }}>
-              🎉 Start free — no credit card required<br/>
-              <span style={{ color:C.gold }}>Starter plan included</span>
+            <div style={{ marginTop:16, padding:"12px 14px", background:C.card, border:`1px solid ${C.cardBorder}`, borderRadius:8, fontSize:11, color:C.muted, textAlign:"center", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+              <Icon name="check" size={13} color={C.emerald} />
+              <span>Start free — no credit card required<br/><span style={{ color:C.gold }}>14-day trial included</span></span>
             </div>
           )}
         </div>
