@@ -448,17 +448,26 @@ function SignaturePad({ onSave, onCancel, isPro }) {
 }
 
 // ─── PREVIEW ──────────────────────────────────────────────────────────────────
-function Preview({ doc, onBack, onConvert, onPaid, onSign, userPlan }) {
+function Preview({ doc, onBack, onConvert, onPaid, onSign, onDuplicate, onEdit, userPlan }) {
   const [showSigPad, setShowSigPad] = useState(false);
   const isPro = userPlan === "pro" || userPlan === "business";
 
+  function emailClient() {
+    const subject = `${doc.type} ${doc.number} — ${doc.company.name}`;
+    const body = `Hi ${doc.client.name},\n\nPlease find attached your ${doc.type.toLowerCase()} ${doc.number} for ${doc.client.projectName||"your project"}.\n\nTotal: ${fmt(doc.total)}\n\nThank you for your business!\n\n${doc.company.name}`;
+    window.open(`mailto:${doc.client.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`);
+  }
+
   return (
-    <div style={{ background:"#111", minHeight:"100vh" }}>
+    <div style={{ background:"#111", minHeight:"100vh" }} className="print-doc">
       <div style={{ maxWidth:820, margin:"0 auto", padding:"28px 16px" }}>
         <div className="no-print" style={{ display:"flex", gap:10, marginBottom:24, flexWrap:"wrap" }}>
           <Btn variant="ghost" icon="back" onClick={onBack}>Back</Btn>
-          {doc.type==="Estimate" && !doc.signature && <Btn variant="steel" icon="invoice" onClick={onConvert}>Convert to Invoice</Btn>}
-          {doc.type==="Estimate" && !doc.signature && <Btn variant="ghost" onClick={()=>setShowSigPad(!showSigPad)}>✍️ Request Signature</Btn>}
+          {doc.type==="Estimate" && !doc.signature && <Btn variant="ghost" onClick={onEdit}>Edit</Btn>}
+          <Btn variant="ghost" onClick={onDuplicate}>Duplicate</Btn>
+          {doc.client.email && <Btn variant="ghost" onClick={emailClient}>Email Client</Btn>}
+          {doc.type==="Estimate" && !doc.signature && <Btn variant="steel" icon="invoice" onClick={onConvert}>→ Invoice</Btn>}
+          {doc.type==="Estimate" && !doc.signature && <Btn variant="ghost" onClick={()=>setShowSigPad(!showSigPad)}>✍️ Signature</Btn>}
           {doc.type==="Invoice" && doc.status!=="Paid" && <Btn variant="emerald" icon="check" onClick={onPaid}>Mark as Paid</Btn>}
           <Btn variant="ghost" icon="print" onClick={()=>window.print()}>Print / PDF</Btn>
         </div>
@@ -554,14 +563,24 @@ function Preview({ doc, onBack, onConvert, onPaid, onSign, userPlan }) {
 }
 
 // ─── DOC LIST ─────────────────────────────────────────────────────────────────
-function DocList({ docs, onNew, onView, onConvert, onPaid }) {
+function DocList({ docs, onNew, onView, onConvert, onPaid, onDuplicate, trialDaysLeft, onUpgrade }) {
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
+
+  const filtered = docs.filter(d => {
+    const matchSearch = !search || d.client.name?.toLowerCase().includes(search.toLowerCase()) || d.number?.toLowerCase().includes(search.toLowerCase()) || d.client.projectName?.toLowerCase().includes(search.toLowerCase());
+    const matchFilter = filter==="all" || (filter==="estimates"&&d.type==="Estimate") || (filter==="invoices"&&d.type==="Invoice") || (filter==="paid"&&d.status==="Paid");
+    return matchSearch && matchFilter;
+  });
+
   const total   = docs.reduce((a,d)=>a+d.total,0);
   const paid    = docs.filter(d=>d.status==="Paid").reduce((a,d)=>a+d.total,0);
   const pending = docs.filter(d=>d.status==="Invoice").reduce((a,d)=>a+d.total,0);
+
   return (
     <div style={{ maxWidth:900, margin:"0 auto", padding:"28px 16px" }}>
       {docs.length>0 && (
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14, marginBottom:28 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14, marginBottom:24 }}>
           {[{label:"Total Quoted",value:fmt(total),color:"#4A90D9",icon:"estimate"},{label:"Collected",value:fmt(paid),color:C.emerald,icon:"check"},{label:"Pending",value:fmt(pending),color:C.gold,icon:"dollar"}].map(s=>(
             <div key={s.label} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"16px 20px" }}>
               <div style={{ fontFamily:FONT_BODY, fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:1.5, marginBottom:6, display:"flex", alignItems:"center", gap:6 }}>
@@ -572,10 +591,32 @@ function DocList({ docs, onNew, onView, onConvert, onPaid }) {
           ))}
         </div>
       )}
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
+
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14, flexWrap:"wrap", gap:10 }}>
         <span style={{ fontFamily:FONT_DISPLAY, fontSize:18, fontWeight:700, color:C.white }}>All Documents</span>
-        <Btn variant="gold" icon="plus" onClick={onNew}>New Document</Btn>
+        <div style={{ display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
+          {/* Search */}
+          <div style={{ position:"relative" }}>
+            <input style={{ ...inp, paddingLeft:34, width:180, fontSize:12 }} placeholder="Search..." value={search} onChange={e=>setSearch(e.target.value)} />
+            <div style={{ position:"absolute", left:10, top:"50%", transform:"translateY(-50%)" }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+          </div>
+          <Btn variant="gold" icon="plus" onClick={onNew}>New</Btn>
+        </div>
       </div>
+
+      {/* Filter tabs */}
+      {docs.length > 0 && (
+        <div style={{ display:"flex", gap:6, marginBottom:16, flexWrap:"wrap" }}>
+          {[["all","All"],["estimates","Estimates"],["invoices","Invoices"],["paid","Paid"]].map(([val,label])=>(
+            <button key={val} onClick={()=>setFilter(val)} style={{ padding:"5px 14px", borderRadius:99, border:`1px solid ${filter===val?C.gold:C.border}`, background:filter===val?C.card:"transparent", color:filter===val?C.gold:C.muted, fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:FONT_BODY }}>
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {docs.length===0 ? (
         <div style={{ textAlign:"center", padding:"60px 20px", border:`1px dashed ${C.border}`, borderRadius:16, background:C.surface }}>
           <div style={{ marginBottom:16 }}><DiamondLogo size={44} /></div>
@@ -583,7 +624,9 @@ function DocList({ docs, onNew, onView, onConvert, onPaid }) {
           <div style={{ fontFamily:FONT_BODY, fontSize:13, color:C.muted, marginBottom:24 }}>Create a professional estimate in under 2 minutes.</div>
           <Btn variant="gold" icon="estimate" onClick={onNew}>Create First Estimate</Btn>
         </div>
-      ) : docs.map(doc=>(
+      ) : filtered.length === 0 ? (
+        <div style={{ textAlign:"center", padding:"40px 20px", color:C.muted, fontFamily:FONT_BODY, fontSize:13 }}>No documents match your search</div>
+      ) : filtered.map(doc=>(
         <div key={doc.id} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"16px 20px", marginBottom:10, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:12 }}>
           <div>
             <div style={{ display:"flex", gap:10, alignItems:"center", marginBottom:4, flexWrap:"wrap" }}>
@@ -597,8 +640,9 @@ function DocList({ docs, onNew, onView, onConvert, onPaid }) {
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:12 }}>
             <div style={{ fontFamily:FONT_DISPLAY, fontSize:22, fontWeight:700, color:C.gold }}>{fmt(doc.total)}</div>
-            <div style={{ display:"flex", gap:6 }}>
+            <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
               <Btn small variant="ghost" onClick={()=>onView(doc)}>View</Btn>
+              <Btn small variant="ghost" onClick={()=>onDuplicate(doc)}>Copy</Btn>
               {doc.type==="Estimate" && <Btn small variant="steel" icon="arrow" onClick={()=>onConvert(doc)}>Invoice</Btn>}
               {doc.type==="Invoice" && doc.status!=="Paid" && <Btn small variant="emerald" icon="check" onClick={()=>onPaid(doc.id)}>Paid</Btn>}
             </div>
@@ -610,14 +654,14 @@ function DocList({ docs, onNew, onView, onConvert, onPaid }) {
 }
 
 // ─── NEW DOC ──────────────────────────────────────────────────────────────────
-function NewDoc({ onSave, onCancel, docCount }) {
-  const [docType, setDocType] = useState("Estimate");
-  const [company, setCompany] = useState({ name:"Green Point by Mijo", industry:Object.keys(INDUSTRIES)[0], phone:"", email:"", address:"" });
-  const [client, setClient]   = useState({ name:"", phone:"", email:"", address:"", projectName:"" });
-  const [items, setItems]     = useState([]);
+function NewDoc({ onSave, onCancel, docCount, editDoc }) {
+  const [docType, setDocType] = useState(editDoc?.type || "Estimate");
+  const [company, setCompany] = useState(editDoc?.company || { name:"Green Point by Mijo", industry:Object.keys(INDUSTRIES)[0], phone:"", email:"", address:"" });
+  const [client, setClient]   = useState(editDoc?.client || { name:"", phone:"", email:"", address:"", projectName:"" });
+  const [items, setItems]     = useState(editDoc?.items || []);
   const [newItem, setNewItem] = useState({ service:"", custom:"", qty:"", price:"" });
-  const [tax, setTax]         = useState(0);
-  const [notes, setNotes]     = useState("");
+  const [tax, setTax]         = useState(editDoc?.tax || 0);
+  const [notes, setNotes]     = useState(editDoc?.notes || "");
 
   const services  = INDUSTRIES[company.industry]||[];
   const subtotal  = items.reduce((a,i)=>a+i.qty*i.price,0);
@@ -638,12 +682,15 @@ function NewDoc({ onSave, onCancel, docCount }) {
 
   function save() {
     const doc = {
-      id:uid(), type:docType,
-      status:docType==="Invoice"?"Invoice":"Estimate",
-      date:today(), due:due30(),
+      id: editDoc?.id || uid(),
+      type:docType,
+      status: editDoc?.status || (docType==="Invoice"?"Invoice":"Estimate"),
+      date: editDoc?.date || today(),
+      due: editDoc?.due || due30(),
       company:{...company}, client:{...client},
       items:[...items], subtotal, taxAmt, tax, total, notes,
-      number:`${docType==="Invoice"?"INV":"EST"}-${String(docCount+1).padStart(4,"0")}`,
+      number: editDoc?.number || `${docType==="Invoice"?"INV":"EST"}-${String(docCount+1).padStart(4,"0")}`,
+      signature: editDoc?.signature || null,
     };
     onSave(doc);
   }
@@ -774,7 +821,7 @@ function NewDoc({ onSave, onCancel, docCount }) {
 
       <div style={{ display:"flex", gap:10, justifyContent:"flex-end" }}>
         <Btn variant="ghost" onClick={onCancel}>Cancel</Btn>
-        <Btn variant="gold" icon="arrow" onClick={save} disabled={items.length===0||!client.name}>Save {docType}</Btn>
+        <Btn variant="gold" icon="arrow" onClick={save} disabled={items.length===0||!client.name}>{editDoc?"Update":"Save"} {docType} →</Btn>
       </div>
     </div>
   );
@@ -1121,33 +1168,238 @@ function Settings({ onBack }) {
   );
 }
 
+// ─── CRM ──────────────────────────────────────────────────────────────────────
+function CRM({ docs, onBack, onView }) {
+  const [search, setSearch] = useState("");
+
+  // Build client list from docs
+  const clients = Object.values(
+    docs.reduce((acc, doc) => {
+      const key = doc.client.email || doc.client.name;
+      if (!key) return acc;
+      if (!acc[key]) {
+        acc[key] = { name:doc.client.name, email:doc.client.email, phone:doc.client.phone, address:doc.client.address, docs:[], totalSpent:0 };
+      }
+      acc[key].docs.push(doc);
+      if (doc.status === "Paid") acc[key].totalSpent += doc.total;
+      return acc;
+    }, {})
+  ).filter(c => c.name?.toLowerCase().includes(search.toLowerCase()) || c.email?.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <div style={{ maxWidth:900, margin:"0 auto", padding:"28px 16px" }}>
+      <div style={{ marginBottom:20 }}>
+        <Btn variant="ghost" icon="back" onClick={()=>window.history.back()}>Back</Btn>
+      </div>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24, flexWrap:"wrap", gap:12 }}>
+        <div style={{ fontFamily:FONT_DISPLAY, fontSize:22, fontWeight:700, color:C.white }}>Clients</div>
+        <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+          <div style={{ position:"relative" }}>
+            <input style={{ ...inp, paddingLeft:36, width:220 }} placeholder="Search clients..." value={search} onChange={e=>setSearch(e.target.value)} />
+            <div style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)" }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {clients.length === 0 ? (
+        <div style={{ textAlign:"center", padding:"60px 20px", border:`1px dashed ${C.border}`, borderRadius:16, background:C.surface }}>
+          <div style={{ marginBottom:16 }}><Icon name="building" size={40} color={C.muted} /></div>
+          <div style={{ fontFamily:FONT_DISPLAY, fontSize:18, fontWeight:700, color:C.white, marginBottom:8 }}>No clients yet</div>
+          <div style={{ fontFamily:FONT_BODY, fontSize:13, color:C.muted }}>Create your first estimate to add a client.</div>
+        </div>
+      ) : clients.map((client, i) => (
+        <div key={i} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"18px 20px", marginBottom:12 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:12 }}>
+            <div>
+              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
+                <div style={{ width:36, height:36, background:C.card, border:`1px solid ${C.cardBorder}`, borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:FONT_DISPLAY, fontSize:16, fontWeight:700, color:C.gold }}>
+                  {client.name?.[0]?.toUpperCase() || "?"}
+                </div>
+                <div>
+                  <div style={{ fontFamily:FONT_DISPLAY, fontSize:15, fontWeight:700, color:C.white }}>{client.name}</div>
+                  <div style={{ fontFamily:FONT_BODY, fontSize:11, color:C.muted }}>{client.email}{client.phone?` · ${client.phone}`:""}</div>
+                </div>
+              </div>
+              <div style={{ fontFamily:FONT_BODY, fontSize:11, color:C.muted }}>{client.address}</div>
+            </div>
+            <div style={{ textAlign:"right" }}>
+              <div style={{ fontFamily:FONT_DISPLAY, fontSize:20, fontWeight:700, color:C.gold }}>{fmt(client.totalSpent)}</div>
+              <div style={{ fontFamily:FONT_BODY, fontSize:10, color:C.muted, marginBottom:8 }}>total collected</div>
+              <div style={{ display:"flex", gap:6, justifyContent:"flex-end", flexWrap:"wrap" }}>
+                {client.docs.slice(0,3).map(d => (
+                  <button key={d.id} onClick={()=>onView(d)} style={{ padding:"4px 10px", background:C.card, border:`1px solid ${C.cardBorder}`, borderRadius:6, fontSize:10, color:C.goldLt, cursor:"pointer", fontFamily:FONT_BODY, fontWeight:600 }}>
+                    {d.number}
+                  </button>
+                ))}
+                {client.docs.length > 3 && <span style={{ fontSize:10, color:C.muted, alignSelf:"center" }}>+{client.docs.length-3} more</span>}
+              </div>
+            </div>
+          </div>
+          <div style={{ display:"flex", gap:16, marginTop:12, paddingTop:12, borderTop:`1px solid ${C.border}` }}>
+            {[
+              { label:"Total docs", value:client.docs.length },
+              { label:"Estimates", value:client.docs.filter(d=>d.type==="Estimate").length },
+              { label:"Invoices", value:client.docs.filter(d=>d.type==="Invoice"||d.type==="Estimate"&&d.status==="Signed").length },
+              { label:"Paid", value:client.docs.filter(d=>d.status==="Paid").length },
+            ].map(s => (
+              <div key={s.label}>
+                <div style={{ fontFamily:FONT_BODY, fontSize:9, color:C.muted, textTransform:"uppercase", letterSpacing:1 }}>{s.label}</div>
+                <div style={{ fontFamily:FONT_DISPLAY, fontSize:16, fontWeight:700, color:C.white }}>{s.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── SCHEDULE ─────────────────────────────────────────────────────────────────
+function Schedule({ docs, onBack, onView }) {
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  const year  = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const firstDay = new Date(year, month, 1).getDay();
+
+  // Map docs to their due dates
+  const docsByDate = docs.reduce((acc, doc) => {
+    const date = doc.due || doc.date;
+    if (!date) return acc;
+    const d = date.slice(8,10);
+    const m = parseInt(date.slice(5,7))-1;
+    const y = parseInt(date.slice(0,4));
+    if (m === month && y === year) {
+      if (!acc[d]) acc[d] = [];
+      acc[d].push(doc);
+    }
+    return acc;
+  }, {});
+
+  const todayStr = today();
+  const todayDay = parseInt(todayStr.slice(8,10));
+  const todayMonth = parseInt(todayStr.slice(5,7))-1;
+  const todayYear = parseInt(todayStr.slice(0,4));
+  const isCurrentMonth = month === todayMonth && year === todayYear;
+
+  const cells = [];
+  for (let i=0; i<firstDay; i++) cells.push(null);
+  for (let d=1; d<=daysInMonth; d++) cells.push(d);
+
+  return (
+    <div style={{ maxWidth:900, margin:"0 auto", padding:"28px 16px" }}>
+      <div style={{ marginBottom:20 }}>
+        <Btn variant="ghost" icon="back" onClick={()=>window.history.back()}>Back</Btn>
+      </div>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
+        <div style={{ fontFamily:FONT_DISPLAY, fontSize:22, fontWeight:700, color:C.white }}>Schedule</div>
+        <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+          <button onClick={()=>setCurrentDate(new Date(year, month-1, 1))} style={{ width:32, height:32, background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <Icon name="back" size={14} color={C.muted} />
+          </button>
+          <div style={{ fontFamily:FONT_DISPLAY, fontSize:16, fontWeight:700, color:C.white, minWidth:160, textAlign:"center" }}>{monthNames[month]} {year}</div>
+          <button onClick={()=>setCurrentDate(new Date(year, month+1, 1))} style={{ width:32, height:32, background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <Icon name="arrow" size={14} color={C.muted} />
+          </button>
+        </div>
+      </div>
+
+      {/* Calendar grid */}
+      <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:14, overflow:"hidden", marginBottom:24 }}>
+        {/* Day headers */}
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", borderBottom:`1px solid ${C.border}` }}>
+          {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d => (
+            <div key={d} style={{ padding:"10px 0", textAlign:"center", fontFamily:FONT_BODY, fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:1 }}>{d}</div>
+          ))}
+        </div>
+        {/* Cells */}
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)" }}>
+          {cells.map((day, i) => {
+            const isToday = isCurrentMonth && day === todayDay;
+            const dayKey = day ? String(day).padStart(2,"0") : null;
+            const dayDocs = dayKey ? (docsByDate[dayKey]||[]) : [];
+            return (
+              <div key={i} style={{ minHeight:80, padding:"8px 6px", borderRight:`1px solid ${C.border}`, borderBottom:`1px solid ${C.border}`, background:isToday?C.card:"transparent" }}>
+                {day && (
+                  <>
+                    <div style={{ fontFamily:FONT_BODY, fontSize:12, fontWeight:isToday?800:400, color:isToday?C.gold:C.muted, marginBottom:4, width:22, height:22, borderRadius:"50%", background:isToday?C.card:"transparent", display:"flex", alignItems:"center", justifyContent:"center" }}>{day}</div>
+                    {dayDocs.slice(0,2).map(d => (
+                      <div key={d.id} onClick={()=>onView(d)} style={{ background:d.status==="Paid"?C.emeraldDk:C.card, border:`1px solid ${d.status==="Paid"?C.emeraldBd:C.cardBorder}`, borderRadius:4, padding:"2px 6px", marginBottom:2, cursor:"pointer", overflow:"hidden" }}>
+                        <div style={{ fontFamily:FONT_BODY, fontSize:9, color:d.status==="Paid"?C.emerald:C.goldLt, fontWeight:600, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{d.client.name||d.number}</div>
+                      </div>
+                    ))}
+                    {dayDocs.length > 2 && <div style={{ fontFamily:FONT_BODY, fontSize:9, color:C.muted }}>+{dayDocs.length-2} more</div>}
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Upcoming */}
+      <div style={{ fontFamily:FONT_BODY, fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:1.5, marginBottom:12 }}>Due this month</div>
+      {docs.filter(d => {
+        const date = d.due || d.date;
+        if (!date) return false;
+        return parseInt(date.slice(5,7))-1 === month && parseInt(date.slice(0,4)) === year;
+      }).length === 0 ? (
+        <div style={{ fontFamily:FONT_BODY, fontSize:13, color:C.muted, textAlign:"center", padding:"24px 0" }}>No documents due this month</div>
+      ) : docs.filter(d => {
+        const date = d.due || d.date;
+        if (!date) return false;
+        return parseInt(date.slice(5,7))-1 === month && parseInt(date.slice(0,4)) === year;
+      }).map(doc => (
+        <div key={doc.id} onClick={()=>onView(doc)} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:"12px 16px", marginBottom:8, display:"flex", justifyContent:"space-between", alignItems:"center", cursor:"pointer" }}>
+          <div>
+            <div style={{ fontFamily:FONT_DISPLAY, fontSize:13, fontWeight:700, color:C.white }}>{doc.client.name} — {doc.number}</div>
+            <div style={{ fontFamily:FONT_BODY, fontSize:11, color:C.muted }}>Due: {doc.due}</div>
+          </div>
+          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+            <Badge status={doc.status} />
+            <div style={{ fontFamily:FONT_DISPLAY, fontSize:16, fontWeight:700, color:C.gold }}>{fmt(doc.total)}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ─── UPDATED HEADER with Settings ─────────────────────────────────────────────
 function HeaderFull({ view, setView, docCount, user, onLogout }) {
   return (
-    <header style={{ background:C.black, height:64, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 28px", borderBottom:`1px solid ${C.border}`, position:"sticky", top:0, zIndex:100 }}>
-      <Logo />
-      <nav style={{ display:"flex", gap:8, alignItems:"center" }}>
-        <button onClick={()=>setView("list")} style={{ padding:"8px 18px", borderRadius:8, border:`1px solid ${view==="list"?C.cardBorder:"transparent"}`, cursor:"pointer", fontSize:12, fontWeight:600, fontFamily:FONT_BODY, background:view==="list"?C.card:"transparent", color:view==="list"?C.goldLt:C.muted, transition:"all 0.15s" }}>
-          Documents {docCount>0&&`(${docCount})`}
+    <header style={{ background:C.black, height:64, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 20px", borderBottom:`1px solid ${C.border}`, position:"sticky", top:0, zIndex:100 }}>
+      <Logo small />
+      <nav style={{ display:"flex", gap:4, alignItems:"center" }}>
+        {[
+          { id:"list",     label:`Docs${docCount>0?` (${docCount})`:""}` },
+          { id:"crm",      label:"Clients" },
+          { id:"schedule", label:"Schedule" },
+          { id:"pricing",  label:"Plans" },
+        ].map(n=>(
+          <button key={n.id} onClick={()=>setView(n.id)} style={{ padding:"6px 12px", borderRadius:8, border:`1px solid ${view===n.id?C.cardBorder:"transparent"}`, cursor:"pointer", fontSize:11, fontWeight:600, fontFamily:FONT_BODY, background:view===n.id?C.card:"transparent", color:view===n.id?C.goldLt:C.muted, transition:"all 0.15s", whiteSpace:"nowrap" }}>
+            {n.label}
+          </button>
+        ))}
+        <button onClick={()=>setView("new")} style={{ padding:"7px 14px", borderRadius:8, border:"none", cursor:"pointer", fontSize:11, fontWeight:800, fontFamily:FONT_BODY, background:C.gold, color:C.ink, display:"flex", alignItems:"center", gap:5 }}>
+          <Icon name="plus" size={12} color={C.ink} /> New
         </button>
-        <button onClick={()=>setView("pricing")} style={{ padding:"8px 16px", borderRadius:8, border:`1px solid ${view==="pricing"?C.gold:"transparent"}`, cursor:"pointer", fontSize:12, fontWeight:600, fontFamily:FONT_BODY, background:"transparent", color:view==="pricing"?C.gold:C.muted, transition:"all 0.15s" }}>
-          Plans
-        </button>
-        <button onClick={()=>setView("new")} style={{ padding:"8px 20px", borderRadius:8, border:"none", cursor:"pointer", fontSize:12, fontWeight:800, fontFamily:FONT_BODY, background:C.gold, color:C.ink, display:"flex", alignItems:"center", gap:6 }}>
-          <Icon name="plus" size={13} color={C.ink} /> New
-        </button>
-        <button onClick={()=>setView("settings")} style={{ width:36, height:36, borderRadius:8, border:`1px solid ${view==="settings"?C.gold:C.border}`, cursor:"pointer", background:view==="settings"?C.card:"transparent", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s" }}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={view==="settings"?C.gold:C.muted} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <button onClick={()=>setView("settings")} style={{ width:32, height:32, borderRadius:8, border:`1px solid ${view==="settings"?C.gold:C.border}`, cursor:"pointer", background:view==="settings"?C.card:"transparent", display:"flex", alignItems:"center", justifyContent:"center", transition:"all 0.15s" }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={view==="settings"?C.gold:C.muted} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="3"/>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
           </svg>
         </button>
         {user && (
-          <div style={{ display:"flex", alignItems:"center", gap:8, marginLeft:4, paddingLeft:12, borderLeft:`1px solid ${C.border}` }}>
-            <div style={{ width:32, height:32, borderRadius:8, background:C.card, border:`1px solid ${C.cardBorder}`, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:FONT_DISPLAY, fontSize:13, fontWeight:700, color:C.gold }}>
+          <div style={{ display:"flex", alignItems:"center", gap:6, marginLeft:4, paddingLeft:8, borderLeft:`1px solid ${C.border}` }}>
+            <div style={{ width:28, height:28, borderRadius:6, background:C.card, border:`1px solid ${C.cardBorder}`, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:FONT_DISPLAY, fontSize:11, fontWeight:700, color:C.gold }}>
               {user.company?.[0]?.toUpperCase()||"S"}
             </div>
-            <button onClick={onLogout} style={{ background:"none", border:"none", cursor:"pointer", fontFamily:FONT_BODY, fontSize:11, color:C.muted, padding:0 }}>Sign out</button>
+            <button onClick={onLogout} style={{ background:"none", border:"none", cursor:"pointer", fontFamily:FONT_BODY, fontSize:10, color:C.muted, padding:0 }}>Sign out</button>
           </div>
         )}
       </nav>
@@ -1300,7 +1552,17 @@ export default function SwiftBook() {
     select option{background:#1A1A1A;color:#FFF;}
     textarea{font-family:'Inter',system-ui,sans-serif;color:#FFF;background:#111;border:1px solid #2A2A2A;border-radius:8px;padding:9px 13px;width:100%;}
     textarea::placeholder{color:#444;}
-    @media print{.no-print{display:none!important;}body{background:white;}}
+    @media print{
+      .no-print{display:none!important;}
+      body{background:white!important;color:#000!important;}
+      .print-doc{background:white!important;color:#000!important;}
+      .print-doc *{color:#000!important;border-color:#DDD!important;background:white!important;}
+      .print-doc .print-gold{color:#8B6914!important;}
+      .print-doc .print-header{background:#F8F8F8!important;border-bottom:2px solid #DDD!important;}
+      .print-doc .print-total{background:#F0F0F0!important;}
+      .print-doc .print-billtо{background:#F8F8F8!important;}
+      .print-doc .print-emerald{color:#065F46!important;}
+    }
   `;
 
   // ── Load session on mount ──────────────────────────────────────────────────
@@ -1361,6 +1623,11 @@ export default function SwiftBook() {
   function markPaid(id) { setDocs(prev => prev.map(d => d.id===id ? {...d,status:"Paid"} : d)); }
   function openPreview(doc) { setPreview(doc); setView("preview"); }
   function signDoc(id, sig) { setDocs(prev => prev.map(d => d.id===id ? {...d, signature:sig, status:"Signed"} : d)); }
+  function duplicateDoc(doc) {
+    const dup = { ...doc, id:uid(), date:today(), due:due30(), status:"Estimate", type:"Estimate", signature:null, number:`EST-${String(docs.length+1).padStart(4,"0")}` };
+    setDocs(prev => [dup, ...prev]);
+  }
+  function updateDoc(updatedDoc) { setDocs(prev => prev.map(d => d.id===updatedDoc.id ? updatedDoc : d)); setView("list"); }
 
   // ── Loading ────────────────────────────────────────────────────────────────
   if (appState === "loading") return (
@@ -1424,11 +1691,14 @@ export default function SwiftBook() {
         <Pricing onSelect={(plan)=>{ setView("list"); }} onBack={()=>setView("list")} expired />
       ) : (
         <>
-          {view==="preview"  && previewDoc && <Preview doc={previewDoc} onBack={()=>setView("list")} onConvert={()=>{convertToInvoice(previewDoc);setView("list");}} onPaid={()=>{markPaid(previewDoc.id);setView("list");}} onSign={signDoc} userPlan={user?.plan||"starter"}/>}
-          {view==="list"     && <DocList docs={docs} onNew={()=>setView("new")} onView={openPreview} onConvert={convertToInvoice} onPaid={markPaid} trialDaysLeft={trialDaysLeft} onUpgrade={()=>setView("pricing")}/>}
+      {view==="preview"  && previewDoc && <Preview doc={previewDoc} onBack={()=>setView("list")} onConvert={()=>{convertToInvoice(previewDoc);setView("list");}} onPaid={()=>{markPaid(previewDoc.id);setView("list");}} onSign={signDoc} onDuplicate={()=>{duplicateDoc(previewDoc);setView("list");}} onEdit={()=>setView("edit")} userPlan={user?.plan||"starter"}/>}
+          {view==="list"     && <DocList docs={docs} onNew={()=>setView("new")} onView={openPreview} onConvert={convertToInvoice} onPaid={markPaid} onDuplicate={duplicateDoc} trialDaysLeft={trialDaysLeft} onUpgrade={()=>setView("pricing")}/>}
           {view==="new"      && <NewDoc onSave={saveDoc} onCancel={()=>setView("list")} docCount={docs.length}/>}
+          {view==="edit"     && previewDoc && <NewDoc onSave={updateDoc} onCancel={()=>setView("preview")} docCount={docs.length} editDoc={previewDoc}/>}
           {view==="settings" && <Settings onBack={()=>setView("list")} user={user} onLogout={handleLogout} onUpgrade={()=>setView("pricing")}/>}
           {view==="pricing"  && <Pricing onSelect={(plan)=>setView("list")} onBack={()=>setView("list")} />}
+          {view==="crm"      && <CRM docs={docs} onBack={()=>setView("list")} onView={openPreview}/>}
+          {view==="schedule" && <Schedule docs={docs} onBack={()=>setView("list")} onView={openPreview}/>}
         </>
       )}
     </div>
