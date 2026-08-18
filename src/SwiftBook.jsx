@@ -1,37 +1,123 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// ─── STRIPE PAYMENT LINKS ─────────────────────────────────────────────────────
-const STRIPE_LINKS = {
-  starter:  "https://buy.stripe.com/14A28sgf19gW3g68qU2sM00",
-  pro:      "https://buy.stripe.com/3cI00kfaX0Kg4kabD62sM01",
-  business: "https://buy.stripe.com/dRm3cw7Iv78Oaly8qU2sM02",
-};
+// ─── STRIPE PAYMENT LINK ──────────────────────────────────────────────────────
+const STRIPE_LINK = import.meta.env.VITE_STRIPE_LINK || "https://buy.stripe.com/14A28sgf19gW3g68qU2sM00";
 
-// ─── STORAGE LAYER (Firebase-ready — swap for Firestore in Lovable) ────────────
+// ─── SUPABASE CLIENT ──────────────────────────────────────────────────────────
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
+
+// ─── DB LAYER — Supabase ──────────────────────────────────────────────────────
 const DB = {
-  async get(key) {
+  // AUTH
+  async register(email, password, company, industry) {
     try {
-      const r = await window.storage.get(key);
-      return r ? JSON.parse(r.value) : null;
+      // Check if user exists
+      const { data: existing } = await supabase
+        .from("users")
+        .select("id")
+        .eq("email", email.toLowerCase().trim())
+        .single();
+      if (existing) return { error: "Email already registered. Please sign in." };
+
+      const { data, error } = await supabase
+        .from("users")
+        .insert([{ email: email.toLowerCase().trim(), password, company, industry, plan:"trial", subscribed:false }])
+        .select()
+        .single();
+      if (error) return { error: error.message };
+      return { user: data };
+    } catch(e) { return { error: e.message }; }
+  },
+
+  async login(email, password) {
+    try {
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .eq("email", email.toLowerCase().trim())
+        .eq("password", password)
+        .single();
+      if (error || !data) return { error: "Invalid email or password." };
+      return { user: data };
+    } catch(e) { return { error: e.message }; }
+  },
+
+  async getUser(id) {
+    try {
+      const { data } = await supabase.from("users").select("*").eq("id", id).single();
+      return data;
     } catch { return null; }
   },
-  async set(key, value) {
+
+  async updateUser(id, updates) {
     try {
-      await window.storage.set(key, JSON.stringify(value));
-      return true;
-    } catch { return false; }
+      const { data } = await supabase.from("users").update(updates).eq("id", id).select().single();
+      return data;
+    } catch { return null; }
   },
-  async list(prefix) {
+
+  // DOCUMENTS
+  async getDocs(userId) {
     try {
-      const r = await window.storage.list(prefix);
-      return r ? r.keys : [];
+      const { data } = await supabase
+        .from("documents")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+      return (data || []).map(d => d.data);
     } catch { return []; }
   },
-  async delete(key) {
+
+  async saveDoc(userId, doc) {
     try {
-      await window.storage.delete(key);
+      // Check if exists
+      const { data: existing } = await supabase
+        .from("documents")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("data->>id", doc.id)
+        .single();
+
+      if (existing) {
+        await supabase.from("documents").update({ data: doc, updated_at: new Date().toISOString() }).eq("id", existing.id);
+      } else {
+        await supabase.from("documents").insert([{ user_id: userId, data: doc }]);
+      }
       return true;
     } catch { return false; }
+  },
+
+  async saveDocs(userId, docs) {
+    try {
+      for (const doc of docs) {
+        await DB.saveDoc(userId, doc);
+      }
+      return true;
+    } catch { return false; }
+  },
+
+  async deleteDoc(userId, docId) {
+    try {
+      await supabase.from("documents").delete().eq("user_id", userId).eq("data->>id", docId);
+      return true;
+    } catch { return false; }
+  },
+
+  // SESSION
+  async saveSession(user) {
+    try { localStorage.setItem("sb_session", JSON.stringify({ id: user.id, email: user.email })); } catch {}
+  },
+
+  async getSession() {
+    try { return JSON.parse(localStorage.getItem("sb_session")); } catch { return null; }
+  },
+
+  async clearSession() {
+    try { localStorage.removeItem("sb_session"); } catch {}
   },
 };
 
@@ -409,7 +495,7 @@ function SignaturePad({ onSave, onCancel, isPro }) {
       </div>
       <div style={{ display:"flex", gap:10, justifyContent:"center" }}>
         <Btn variant="ghost" onClick={onCancel}>Cancel</Btn>
-        <Btn variant="gold" icon="arrow" onClick={()=>window.open(STRIPE_LINKS.pro, '_blank')}>Upgrade to Pro →</Btn>
+        <Btn variant="gold" icon="arrow" onClick={()=>window.open(STRIPE_LINK, '_blank')}>Subscribe Now — $29.99/mo →</Btn>
       </div>
     </div>
   );
@@ -895,13 +981,11 @@ function Onboarding({ onComplete }) {
           {/* Plan badges — only on step 0 */}
           {step === 0 && (
             <div style={{ display:"flex", gap:8, justifyContent:"center", marginBottom:32 }}>
-              {[{label:"Starter", price:"$24.99"},{label:"Pro", price:"$49.99"},{label:"Business", price:"$99.99"}].map(p=>(
-                <div key={p.label} style={{ background:C.card, border:`1px solid ${C.cardBorder}`, borderRadius:10, padding:"10px 14px", flex:1 }}>
-                  <div style={{ fontFamily:FONT_BODY, fontSize:10, color:C.muted, marginBottom:4 }}>{p.label}</div>
-                  <div style={{ fontFamily:FONT_DISPLAY, fontSize:16, fontWeight:700, color:C.gold }}>{p.price}</div>
-                  <div style={{ fontFamily:FONT_BODY, fontSize:9, color:C.muted }}>/ month</div>
-                </div>
-              ))}
+              <div style={{ background:C.card, border:`2px solid ${C.gold}`, borderRadius:12, padding:"16px 28px", textAlign:"center" }}>
+                <div style={{ fontFamily:FONT_BODY, fontSize:12, color:C.muted, marginBottom:6 }}>SwiftBook</div>
+                <div style={{ fontFamily:FONT_DISPLAY, fontSize:28, fontWeight:700, color:C.gold }}>$29.99</div>
+                <div style={{ fontFamily:FONT_BODY, fontSize:10, color:C.muted, marginTop:4 }}>/ month · Everything included</div>
+              </div>
             </div>
           )}
 
@@ -1100,7 +1184,7 @@ function Settings({ onBack }) {
               </div>
             ))}
           </div>
-          <Btn variant="gold" onClick={()=>window.open(STRIPE_LINKS[plan], '_blank')} icon="arrow">Upgrade Plan</Btn>
+          <Btn variant="gold" onClick={()=>window.open(STRIPE_LINK, '_blank')} icon="arrow">Subscribe Now — $29.99/mo</Btn>
 
           {/* Cancel */}
           <div style={{ marginTop:32, paddingTop:24, borderTop:`1px solid ${C.border}` }}>
@@ -1379,7 +1463,7 @@ function HeaderFull({ view, setView, docCount, user, onLogout }) {
           { id:"list",     label:`Docs${docCount>0?` (${docCount})`:""}` },
           { id:"crm",      label:"Clients" },
           { id:"schedule", label:"Schedule" },
-          { id:"pricing",  label:"Plans" },
+          { id:"pricing",  label:"Subscribe" },
         ].map(n=>(
           <button key={n.id} onClick={()=>setView(n.id)} style={{ padding:"6px 12px", borderRadius:8, border:`1px solid ${view===n.id?C.cardBorder:"transparent"}`, cursor:"pointer", fontSize:11, fontWeight:600, fontFamily:FONT_BODY, background:view===n.id?C.card:"transparent", color:view===n.id?C.goldLt:C.muted, transition:"all 0.15s", whiteSpace:"nowrap" }}>
             {n.label}
@@ -1420,11 +1504,9 @@ function Login({ onLogin, onRegister }) {
   async function handleLogin() {
     if (!email || !password) { setError("Please fill in all fields."); return; }
     setLoading(true); setError("");
-    const key = `user:${email.toLowerCase().trim()}`;
-    const user = await DB.get(key);
-    if (!user) { setError("Account not found. Please register."); setLoading(false); return; }
-    if (user.password !== password) { setError("Incorrect password. Try again."); setLoading(false); return; }
+    const { user, error } = await DB.login(email, password);
     setLoading(false);
+    if (error) { setError(error); return; }
     onLogin(user);
   }
 
@@ -1432,12 +1514,9 @@ function Login({ onLogin, onRegister }) {
     if (!email || !password || !company) { setError("Please fill in all fields."); return; }
     if (password.length < 6) { setError("Password must be at least 6 characters."); return; }
     setLoading(true); setError("");
-    const key = `user:${email.toLowerCase().trim()}`;
-    const existing = await DB.get(key);
-    if (existing) { setError("Email already registered. Please login."); setLoading(false); return; }
-    const user = { id: uid(), email: email.toLowerCase().trim(), password, company, industry, plan:"starter", createdAt: today() };
-    await DB.set(key, user);
+    const { user, error } = await DB.register(email, password, company, industry);
     setLoading(false);
+    if (error) { setError(error); return; }
     onRegister(user);
   }
 
@@ -1568,12 +1647,18 @@ export default function SwiftBook() {
   // ── Load session on mount ──────────────────────────────────────────────────
   useEffect(() => {
     async function loadSession() {
-      const session = await DB.get("session:current");
+      const session = await DB.getSession();
       if (session) {
-        setUser(session);
-        const savedDocs = await DB.get(`docs:${session.id}`) || [];
-        setDocs(savedDocs);
-        setAppState("app");
+        const user = await DB.getUser(session.id);
+        if (user) {
+          setUser(user);
+          const savedDocs = await DB.getDocs(user.id);
+          setDocs(savedDocs);
+          setAppState("app");
+        } else {
+          await DB.clearSession();
+          setAppState("login");
+        }
       } else {
         setAppState("login");
       }
@@ -1583,29 +1668,29 @@ export default function SwiftBook() {
 
   // ── Save docs whenever they change ────────────────────────────────────────
   useEffect(() => {
-    if (user && docs.length >= 0) {
-      DB.set(`docs:${user.id}`, docs);
+    if (user && docs.length > 0) {
+      DB.saveDocs(user.id, docs);
     }
   }, [docs, user]);
 
   // ── Auth handlers ─────────────────────────────────────────────────────────
   async function handleLogin(u) {
-    await DB.set("session:current", u);
-    const savedDocs = await DB.get(`docs:${u.id}`) || [];
+    await DB.saveSession(u);
+    const savedDocs = await DB.getDocs(u.id);
     setDocs(savedDocs);
     setUser(u);
     setAppState("app");
   }
 
   async function handleRegister(u) {
-    await DB.set("session:current", u);
+    await DB.saveSession(u);
     setUser(u);
     setDocs([]);
     setAppState("onboarding");
   }
 
   async function handleLogout() {
-    await DB.delete("session:current");
+    await DB.clearSession();
     setUser(null);
     setDocs([]);
     setView("list");
@@ -1659,13 +1744,13 @@ export default function SwiftBook() {
 
   // ── Trial days remaining ───────────────────────────────────────────────────
   const trialDaysLeft = user ? (() => {
-    const created = new Date(user.createdAt);
+    const created = new Date(user.created_at || user.createdAt || new Date());
     const now = new Date();
     const diff = Math.floor((now - created) / (1000 * 60 * 60 * 24));
     return Math.max(0, 14 - diff);
   })() : 14;
 
-  const isTrialExpired = trialDaysLeft === 0 && user?.plan === "starter" && !user?.subscribed;
+  const isTrialExpired = trialDaysLeft === 0 && !user?.subscribed;
 
   // ── Main App ───────────────────────────────────────────────────────────────
   return (
@@ -1679,8 +1764,8 @@ export default function SwiftBook() {
             <div style={{ fontFamily:FONT_BODY, fontSize:12, color:C.goldLt }}>
               ⚡ <strong>{trialDaysLeft} days left</strong> on your free trial
             </div>
-            <button onClick={()=>window.open(STRIPE_LINKS.starter, '_blank')} style={{ padding:"5px 14px", background:C.gold, color:C.ink, border:"none", borderRadius:6, fontSize:11, fontWeight:800, cursor:"pointer", fontFamily:FONT_BODY }}>
-              Upgrade Now →
+            <button onClick={()=>window.open(STRIPE_LINK, '_blank')} style={{ padding:"5px 14px", background:C.gold, color:C.ink, border:"none", borderRadius:6, fontSize:11, fontWeight:800, cursor:"pointer", fontFamily:FONT_BODY }}>
+              Subscribe Now →
             </button>
           </div>
         )}
@@ -1688,7 +1773,7 @@ export default function SwiftBook() {
 
       {/* Trial expired wall */}
       {isTrialExpired && view !== "pricing" ? (
-        <Pricing onSelect={(plan)=>{ setView("list"); }} onBack={()=>setView("list")} expired />
+        <Pricing onBack={()=>setView("list")} expired />
       ) : (
         <>
       {view==="preview"  && previewDoc && <Preview doc={previewDoc} onBack={()=>setView("list")} onConvert={()=>{convertToInvoice(previewDoc);setView("list");}} onPaid={()=>{markPaid(previewDoc.id);setView("list");}} onSign={signDoc} onDuplicate={()=>{duplicateDoc(previewDoc);setView("list");}} onEdit={()=>setView("edit")} userPlan={user?.plan||"starter"}/>}
@@ -1696,7 +1781,7 @@ export default function SwiftBook() {
           {view==="new"      && <NewDoc onSave={saveDoc} onCancel={()=>setView("list")} docCount={docs.length}/>}
           {view==="edit"     && previewDoc && <NewDoc onSave={updateDoc} onCancel={()=>setView("preview")} docCount={docs.length} editDoc={previewDoc}/>}
           {view==="settings" && <Settings onBack={()=>setView("list")} user={user} onLogout={handleLogout} onUpgrade={()=>setView("pricing")}/>}
-          {view==="pricing"  && <Pricing onSelect={(plan)=>setView("list")} onBack={()=>setView("list")} />}
+          {view==="pricing"  && <Pricing onBack={()=>setView("list")} />}
           {view==="crm"      && <CRM docs={docs} onBack={()=>setView("list")} onView={openPreview}/>}
           {view==="schedule" && <Schedule docs={docs} onBack={()=>setView("list")} onView={openPreview}/>}
         </>
@@ -1706,214 +1791,99 @@ export default function SwiftBook() {
 }
 
 // ─── PRICING SCREEN ───────────────────────────────────────────────────────────
-function Pricing({ onSelect, onBack, expired }) {
-  const [selected, setSelected] = useState("pro");
-  const [billing, setBilling]   = useState("monthly"); // monthly | yearly
-
-  const plans = [
-    {
-      id:       "starter",
-      name:     "Starter",
-      icon:     "estimate",
-      monthly:  24.99,
-      yearly:   19.99,
-      color:    "#4A90D9",
-      users:    "1 user",
-      badge:    null,
-      features: [
-        "Unlimited estimates",
-        "Unlimited invoices",
-        "12 industries",
-        "Company logo",
-        "Scheduling",
-        "Print / PDF",
-        "Help Center",
-        "Email support — 72hrs",
-      ],
-    },
-    {
-      id:       "pro",
-      name:     "Pro",
-      icon:     "dollar",
-      monthly:  49.99,
-      yearly:   39.99,
-      color:    C.gold,
-      users:    "3 users",
-      badge:    "Most Popular",
-      features: [
-        "Everything in Starter",
-        "3 users",
-        "CRM — client profiles",
-        "Lead management",
-        "Client digital signature",
-        "Basic reports",
-        "Email support — 24hrs",
-      ],
-    },
-    {
-      id:       "business",
-      name:     "Business",
-      icon:     "building",
-      monthly:  99.99,
-      yearly:   79.99,
-      color:    C.emerald,
-      users:    "10 users",
-      badge:    null,
-      features: [
-        "Everything in Pro",
-        "10 users",
-        "Advanced CRM",
-        "Marketing emails",
-        "Advanced scheduling",
-        "Advanced reports",
-        "QuickBooks integration",
-        "Email support — 12hrs",
-      ],
-    },
-  ];
-
-  const yearSavings = { starter: 60, pro: 120, business: 240 };
-
+function Pricing({ onBack, expired }) {
   return (
     <div style={{ minHeight:"100vh", background:C.black, padding:"40px 16px" }}>
-      <div style={{ maxWidth:900, margin:"0 auto" }}>
+      <div style={{ maxWidth:560, margin:"0 auto" }}>
 
-        {/* Back */}
         {!expired && (
           <div style={{ marginBottom:28 }}>
             <Btn variant="ghost" icon="back" onClick={onBack}>Back</Btn>
           </div>
         )}
 
-        {/* Header */}
-        <div style={{ textAlign:"center", marginBottom:40 }}>
+        <div style={{ textAlign:"center", marginBottom:36 }}>
+          <DiamondLogo size={44} />
           {expired && (
-            <div style={{ background:"#1A0A00", border:`1px solid #3A1A00`, borderRadius:10, padding:"12px 20px", marginBottom:24, display:"inline-block" }}>
-              <span style={{ fontFamily:FONT_BODY, fontSize:13, color:C.gold }}>⚡ Your 14-day free trial has ended — choose a plan to continue</span>
+            <div style={{ background:"#1A0A00", border:`1px solid #3A1A00`, borderRadius:10, padding:"12px 20px", margin:"20px 0", display:"inline-block" }}>
+              <span style={{ fontFamily:FONT_BODY, fontSize:13, color:C.gold }}>Your 14-day free trial has ended</span>
             </div>
           )}
-          <div style={{ fontFamily:FONT_DISPLAY, fontSize:32, fontWeight:900, color:C.white, marginBottom:8 }}>
-            Simple, transparent pricing
+          <div style={{ fontFamily:FONT_DISPLAY, fontSize:32, fontWeight:900, color:C.white, marginBottom:8, marginTop:16 }}>
+            One plan. Everything included.
           </div>
-          <div style={{ fontFamily:FONT_BODY, fontSize:14, color:C.muted, marginBottom:24 }}>
-            No hidden fees. Cancel anytime. 14-day free trial on all plans.
-          </div>
-
-          {/* Billing toggle */}
-          <div style={{ display:"inline-flex", background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:4, gap:4 }}>
-            {["monthly","yearly"].map(b => (
-              <button key={b} onClick={()=>setBilling(b)} style={{ padding:"8px 20px", borderRadius:8, border:"none", cursor:"pointer", fontFamily:FONT_BODY, fontSize:12, fontWeight:700, background:billing===b?C.gold:"transparent", color:billing===b?C.ink:C.muted, transition:"all 0.15s", display:"flex", alignItems:"center", gap:6 }}>
-                {b === "monthly" ? "Monthly" : "Yearly"}
-                {b === "yearly" && <span style={{ background:C.emeraldDk, color:C.emerald, fontSize:9, padding:"2px 6px", borderRadius:99, border:`1px solid ${C.emeraldBd}` }}>Save 20%</span>}
-              </button>
-            ))}
+          <div style={{ fontFamily:FONT_BODY, fontSize:14, color:C.muted }}>
+            No hidden fees. Cancel anytime.
           </div>
         </div>
 
-        {/* Plans grid */}
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16, marginBottom:32 }}>
-          {plans.map(p => {
-            const price = billing === "monthly" ? p.monthly : p.yearly;
-            const isSel = selected === p.id;
-            return (
-              <div key={p.id} onClick={()=>setSelected(p.id)} style={{ background:isSel?C.card:C.surface, border:`2px solid ${isSel?p.color:C.border}`, borderRadius:16, padding:"24px 20px", cursor:"pointer", transition:"all 0.2s", position:"relative", overflow:"hidden" }}>
+        {/* Single Plan Card */}
+        <div style={{ background:C.card, border:`2px solid ${C.gold}`, borderRadius:20, padding:"36px 32px", textAlign:"center", position:"relative", overflow:"hidden" }}>
+          <div style={{ position:"absolute", top:0, right:0, background:C.gold, color:C.ink, fontSize:10, fontWeight:800, padding:"6px 16px", borderRadius:"0 18px 0 12px", fontFamily:FONT_BODY, letterSpacing:1 }}>
+            EVERYTHING INCLUDED
+          </div>
 
-                {/* Badge */}
-                {p.badge && (
-                  <div style={{ position:"absolute", top:0, right:0, background:C.gold, color:C.ink, fontSize:9, fontWeight:800, padding:"4px 12px", borderRadius:"0 14px 0 10px", fontFamily:FONT_BODY, letterSpacing:1 }}>
-                    {p.badge}
-                  </div>
-                )}
+          <div style={{ fontFamily:FONT_DISPLAY, fontSize:22, fontWeight:700, color:C.white, marginBottom:8 }}>SwiftBook</div>
 
-                {/* Icon + Name */}
-                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:16 }}>
-                  <div style={{ width:38, height:38, background:C.black, border:`1px solid ${isSel?p.color:C.border}`, borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <Icon name={p.icon} size={18} color={p.color} />
-                  </div>
-                  <div>
-                    <div style={{ fontFamily:FONT_DISPLAY, fontSize:16, fontWeight:700, color:C.white }}>{p.name}</div>
-                    <div style={{ fontFamily:FONT_BODY, fontSize:10, color:C.muted }}>{p.users}</div>
-                  </div>
-                </div>
+          <div style={{ display:"flex", alignItems:"baseline", justifyContent:"center", gap:4, marginBottom:6 }}>
+            <span style={{ fontFamily:FONT_DISPLAY, fontSize:52, fontWeight:900, color:C.gold }}>$29</span>
+            <span style={{ fontFamily:FONT_DISPLAY, fontSize:28, fontWeight:700, color:C.gold }}>.99</span>
+            <span style={{ fontFamily:FONT_BODY, fontSize:14, color:C.muted }}>/month</span>
+          </div>
+          <div style={{ fontFamily:FONT_BODY, fontSize:12, color:C.muted, marginBottom:28 }}>
+            2 users included · +$9.99/mo per extra user
+          </div>
 
-                {/* Price */}
-                <div style={{ marginBottom:20 }}>
-                  <div style={{ display:"flex", alignItems:"baseline", gap:4 }}>
-                    <span style={{ fontFamily:FONT_DISPLAY, fontSize:36, fontWeight:900, color:p.color }}>${price}</span>
-                    <span style={{ fontFamily:FONT_BODY, fontSize:11, color:C.muted }}>/mo</span>
-                  </div>
-                  {billing === "yearly" && (
-                    <div style={{ fontFamily:FONT_BODY, fontSize:11, color:C.emerald, marginTop:2 }}>
-                      Save ${yearSavings[p.id]}/year
-                    </div>
-                  )}
-                </div>
-
-                {/* Features */}
-                <div style={{ marginBottom:20 }}>
-                  {p.features.map(f => (
-                    <div key={f} style={{ display:"flex", alignItems:"flex-start", gap:8, padding:"5px 0" }}>
-                      <div style={{ marginTop:1, flexShrink:0 }}><Icon name="check" size={12} color={isSel?p.color:C.muted} /></div>
-                      <span style={{ fontFamily:FONT_BODY, fontSize:12, color:isSel?C.white:C.muted, lineHeight:1.4 }}>{f}</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* CTA */}
-                <button onClick={e=>{ e.stopPropagation(); window.open(STRIPE_LINKS[p.id], '_blank'); }} style={{ width:"100%", padding:"11px 0", borderRadius:10, border:`2px solid ${p.color}`, cursor:"pointer", fontFamily:FONT_BODY, fontSize:13, fontWeight:800, background:isSel?p.color:"transparent", color:isSel?C.ink:p.color, transition:"all 0.15s" }}>
-                  {isSel ? "Subscribe Now →" : "Select Plan"}
-                </button>
+          {/* Features */}
+          <div style={{ textAlign:"left", marginBottom:28 }}>
+            {[
+              "Unlimited estimates & invoices",
+              "12 industries",
+              "2 users included",
+              "Company logo on documents",
+              "Client digital signature",
+              "CRM — client history",
+              "Scheduling calendar",
+              "Search & filter documents",
+              "Duplicate estimates",
+              "Email client directly",
+              "Professional PDF / Print",
+              "Email support",
+            ].map(f => (
+              <div key={f} style={{ display:"flex", alignItems:"center", gap:10, padding:"7px 0", borderBottom:`1px solid ${C.border}` }}>
+                <Icon name="check" size={14} color={C.emerald} />
+                <span style={{ fontFamily:FONT_BODY, fontSize:13, color:C.white }}>{f}</span>
               </div>
-            );
-          })}
+            ))}
+          </div>
+
+          {/* CTA */}
+          <button onClick={()=>window.open(STRIPE_LINK, '_blank')} style={{ width:"100%", padding:"16px 24px", borderRadius:12, border:"none", cursor:"pointer", fontFamily:FONT_BODY, fontSize:16, fontWeight:800, background:C.gold, color:C.ink, transition:"all 0.15s" }}>
+            Subscribe Now — $29.99/mo →
+          </button>
+
+          <div style={{ marginTop:16, fontFamily:FONT_BODY, fontSize:11, color:C.muted }}>
+            14-day free trial · No credit card required · Cancel anytime
+          </div>
         </div>
 
         {/* Stripe badge */}
-        <div style={{ textAlign:"center", marginBottom:24 }}>
+        <div style={{ textAlign:"center", marginTop:20 }}>
           <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:"10px 18px" }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={C.emerald} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             <span style={{ fontFamily:FONT_BODY, fontSize:11, color:C.muted }}>Secured by </span>
             <span style={{ fontFamily:FONT_BODY, fontSize:11, color:C.white, fontWeight:700 }}>Stripe</span>
-            <span style={{ fontFamily:FONT_BODY, fontSize:11, color:C.muted }}>· 256-bit SSL encryption</span>
+            <span style={{ fontFamily:FONT_BODY, fontSize:11, color:C.muted }}>· 256-bit SSL</span>
           </div>
-        </div>
-
-        {/* Comparison table */}
-        <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:16, overflow:"hidden" }}>
-          <div style={{ padding:"18px 24px", borderBottom:`1px solid ${C.border}` }}>
-            <div style={{ fontFamily:FONT_DISPLAY, fontSize:16, fontWeight:700, color:C.white }}>Full feature comparison</div>
-          </div>
-          {[
-            { feature:"Estimates & Invoices",    starter:"Unlimited", pro:"Unlimited",  business:"Unlimited"  },
-            { feature:"Industries",              starter:"12",        pro:"12",          business:"12"         },
-            { feature:"Users",                   starter:"1",         pro:"3",           business:"10"         },
-            { feature:"Company logo",            starter:"✓",         pro:"✓",           business:"✓"          },
-            { feature:"Scheduling",              starter:"Basic",     pro:"Advanced",    business:"Advanced"   },
-            { feature:"CRM",                     starter:"—",         pro:"✓",           business:"Advanced"   },
-            { feature:"Lead Management",         starter:"—",         pro:"✓",           business:"✓"          },
-            { feature:"Client Signature",        starter:"—",         pro:"✓",           business:"✓"          },
-            { feature:"Reports",                 starter:"—",         pro:"Basic",       business:"Advanced"   },
-            { feature:"Marketing Emails",        starter:"—",         pro:"—",           business:"✓"          },
-            { feature:"QuickBooks Integration",  starter:"—",         pro:"—",           business:"✓"          },
-            { feature:"Email Support",           starter:"72hrs",     pro:"24hrs",       business:"12hrs"      },
-          ].map((row, i) => (
-            <div key={row.feature} style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:8, padding:"12px 24px", borderBottom:i<11?`1px solid ${C.border}`:"none", background:i%2===0?"transparent":C.black }}>
-              <span style={{ fontFamily:FONT_BODY, fontSize:12, color:C.muted }}>{row.feature}</span>
-              {[row.starter, row.pro, row.business].map((val, j) => (
-                <span key={j} style={{ fontFamily:FONT_BODY, fontSize:12, fontWeight:600, color:val==="—"?C.border:val==="✓"?C.emerald:C.white, textAlign:"center" }}>{val}</span>
-              ))}
-            </div>
-          ))}
         </div>
 
         {/* FAQ */}
-        <div style={{ marginTop:32 }}>
-          <div style={{ fontFamily:FONT_DISPLAY, fontSize:18, fontWeight:700, color:C.white, marginBottom:16, textAlign:"center" }}>Frequently asked questions</div>
+        <div style={{ marginTop:28 }}>
           {[
             { q:"Can I cancel anytime?", a:"Yes — cancel anytime from Settings. You keep access until the end of your billing period." },
             { q:"Do you offer a free trial?", a:"Yes! Every new account gets 14 days free with full access. No credit card required." },
-            { q:"Can I switch plans?", a:"Absolutely. Upgrade or downgrade anytime from Settings → Subscription." },
-            { q:"Is my data secure?", a:"Yes. All data is encrypted and stored securely. Payments are processed by Stripe." },
+            { q:"What happens after the trial?", a:"You'll be prompted to subscribe at $29.99/month to keep full access to your documents." },
+            { q:"Is my data secure?", a:"Yes. All data is encrypted and stored securely. Payments processed by Stripe." },
           ].map((item, i) => (
             <div key={i} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"16px 20px", marginBottom:10 }}>
               <div style={{ fontFamily:FONT_DISPLAY, fontSize:14, fontWeight:700, color:C.white, marginBottom:6 }}>{item.q}</div>
@@ -1922,8 +1892,7 @@ function Pricing({ onSelect, onBack, expired }) {
           ))}
         </div>
 
-        {/* Footer */}
-        <div style={{ textAlign:"center", marginTop:28, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
+        <div style={{ textAlign:"center", marginTop:24, display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
           <DiamondLogo size={14} />
           <span style={{ fontFamily:FONT_BODY, fontSize:11, color:C.dim }}>SwiftBook · getswiftbook.app</span>
         </div>
