@@ -121,23 +121,33 @@ const DB = {
   },
 };
 
-// ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
+// ─── DESIGN TOKENS — Light Mode ───────────────────────────────────────────────
 const C = {
-  black:     "#0D0D0D",
-  surface:   "#1A1A1A",
-  card:      "#1C1C2E",
-  cardBorder:"#2A2A3E",
-  border:    "#222222",
-  gold:      "#C9A84C",
-  goldLt:    "#E8C97E",
-  emerald:   "#10B981",
-  emeraldDk: "#0A2A0A",
-  emeraldBd: "#1A4A1A",
+  // Backgrounds
+  black:     "#0D0D0D",   // header only
+  surface:   "#F8F6F0",   // main background
+  card:      "#FFFFFF",   // cards
+  cardBorder:"#E8E4DC",   // card borders
+  border:    "#E0DCD4",   // general borders
+  // Brand
+  gold:      "#C9A84C",   // primary accent
+  goldLt:    "#B8860B",   // gold darker for light bg
+  goldDk:    "#8B6914",   // gold deepest
+  // Semantic colors
+  blue:      "#1A6FD4",   // quoted
+  emerald:   "#059652",   // collected/paid
+  emeraldDk: "#EDFAF4",   // paid bg
+  emeraldBd: "#B8EDD8",   // paid border
+  red:       "#DC2626",   // due/pending
+  redDk:     "#FEE2E2",   // due bg
+  redBd:     "#FECACA",   // due border
+  redText:   "#B91C1C",   // due text dark
+  // Text
   white:     "#FFFFFF",
-  muted:     "#555555",
-  dim:       "#333333",
-  danger:    "#EF4444",
-  ink:       "#0D0D0D",
+  ink:       "#1A1A1A",   // primary text
+  muted:     "#888888",   // secondary text
+  dim:       "#AAAAAA",   // tertiary text
+  danger:    "#DC2626",
 };
 
 const FONT_DISPLAY = "'Playfair Display', Georgia, serif";
@@ -369,8 +379,8 @@ function Header({ view, setView, docCount }) {
 function Badge({ status }) {
   const map = {
     Paid:     { bg:C.emeraldDk, color:C.emerald, border:C.emeraldBd, label:"✓ Paid"    },
-    Invoice:  { bg:"#2A2200",   color:C.goldLt,  border:"#3A3000",   label:"Invoice"   },
-    Estimate: { bg:C.card,      color:"#4A90D9", border:C.cardBorder,label:"Estimate"  },
+    Invoice:  { bg:C.redDk,     color:C.red,     border:C.redBd,     label:"Invoice"   },
+    Estimate: { bg:"#EEF4FF",   color:C.blue,    border:"#C8DEFF",   label:"Estimate"  },
     Signed:   { bg:C.emeraldDk, color:C.emerald, border:C.emeraldBd, label:"✍️ Signed" },
   };
   const b = map[status]||map.Estimate;
@@ -379,15 +389,15 @@ function Badge({ status }) {
 
 function Btn({ children, variant="gold", onClick, disabled, small, icon }) {
   const map = {
-    gold:    { bg:C.gold,      color:C.ink     },
-    emerald: { bg:C.emeraldDk, color:C.emerald },
-    ghost:   { bg:C.surface,   color:C.muted   },
-    steel:   { bg:"#1E3A5F",   color:"#4A90D9" },
-    danger:  { bg:"#3A0A0A",   color:C.danger  },
+    gold:    { bg:C.gold,    color:C.white, border:"none"                          },
+    emerald: { bg:C.emeraldDk, color:C.emerald, border:`1px solid ${C.emeraldBd}` },
+    ghost:   { bg:"#F0ECE4", color:C.muted,   border:`1px solid ${C.border}`      },
+    steel:   { bg:"#EEF4FF", color:C.blue,    border:"1px solid #C8DEFF"          },
+    danger:  { bg:C.redDk,   color:C.red,     border:`1px solid ${C.redBd}`       },
   };
   const v = map[variant]||map.gold;
   return (
-    <button onClick={onClick} disabled={disabled} style={{ padding:small?"5px 12px":"10px 22px", borderRadius:8, border:"none", cursor:disabled?"not-allowed":"pointer", fontSize:small?11:13, fontWeight:700, fontFamily:FONT_BODY, background:disabled?C.border:v.bg, color:disabled?C.muted:v.color, transition:"all 0.15s", whiteSpace:"nowrap", display:"flex", alignItems:"center", gap:6, opacity:disabled?0.6:1 }}>
+    <button onClick={onClick} disabled={disabled} style={{ padding:small?"5px 12px":"10px 22px", borderRadius:8, border:v.border, cursor:disabled?"not-allowed":"pointer", fontSize:small?11:13, fontWeight:700, fontFamily:FONT_BODY, background:disabled?"#E0DCD4":v.bg, color:disabled?C.muted:v.color, transition:"all 0.15s", whiteSpace:"nowrap", display:"flex", alignItems:"center", gap:6, opacity:disabled?0.6:1 }}>
       {icon && <Icon name={icon} size={small?11:13} color={disabled?C.muted:v.color} />}
       {children}
     </button>
@@ -395,7 +405,7 @@ function Btn({ children, variant="gold", onClick, disabled, small, icon }) {
 }
 
 function Card({ children, style }) {
-  return <div style={{ background:C.surface, borderRadius:14, border:`1px solid ${C.border}`, padding:22, marginBottom:18, ...style }}>{children}</div>;
+  return <div style={{ background:C.card, borderRadius:14, border:`1px solid ${C.cardBorder}`, padding:22, marginBottom:18, boxShadow:"0 1px 6px rgba(0,0,0,0.06)", ...style }}>{children}</div>;
 }
 
 function SectionTitle({ children }) {
@@ -406,7 +416,13 @@ function SectionTitle({ children }) {
   );
 }
 
-const inp = { padding:"9px 13px", borderRadius:8, border:`1px solid #2A2A2A`, fontSize:13, background:"#111", color:C.white, width:"100%", fontFamily:FONT_BODY };
+const inp = {
+  padding:"9px 13px", borderRadius:8,
+  border:`1.5px solid ${C.border}`,
+  fontSize:13, background:C.white,
+  color:C.ink, width:"100%",
+  fontFamily:FONT_BODY,
+};
 
 function Field({ label, children }) {
   return (
@@ -421,7 +437,7 @@ function CostMeter({ total }) {
   const pct = Math.min((total/15000)*100,100);
   const col = pct>70?C.gold:C.emerald;
   return (
-    <div style={{ background:"#111", border:`1px solid ${C.border}`, borderRadius:10, padding:"14px 18px", marginBottom:16 }}>
+    <div style={{ background:"#F0ECE4", border:`1px solid ${C.border}`, borderRadius:10, padding:"14px 18px", marginBottom:16 }}>
       <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
         <span style={{ fontFamily:FONT_BODY, fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:1.5 }}>Project Value</span>
         <span style={{ fontFamily:FONT_DISPLAY, fontSize:24, fontWeight:700, color:col }}>{fmt(total)}</span>
@@ -545,7 +561,7 @@ function Preview({ doc, onBack, onConvert, onPaid, onSign, onDuplicate, onEdit, 
   }
 
   return (
-    <div style={{ background:"#111", minHeight:"100vh" }} className="print-doc">
+    <div style={{ background:C.surface, minHeight:"100vh" }} className="print-doc">
       <div style={{ maxWidth:820, margin:"0 auto", padding:"28px 16px" }}>
         <div className="no-print" style={{ display:"flex", gap:10, marginBottom:24, flexWrap:"wrap" }}>
           <Btn variant="ghost" icon="back" onClick={onBack}>Back</Btn>
@@ -567,7 +583,7 @@ function Preview({ doc, onBack, onConvert, onPaid, onSign, onDuplicate, onEdit, 
           />
         )}
 
-        <div style={{ background:C.surface, borderRadius:16, overflow:"hidden", border:`1px solid ${C.border}` }}>
+        <div style={{ background:C.card, borderRadius:16, overflow:"hidden", border:`1px solid ${C.cardBorder}`, boxShadow:"0 4px 24px rgba(0,0,0,0.08)" }}>
           <div style={{ background:C.black, padding:"26px 32px", display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:20, borderBottom:`1px solid ${C.border}` }}>
             <div>
               <div style={{ marginBottom:10 }}><Logo small /></div>
@@ -584,7 +600,7 @@ function Preview({ doc, onBack, onConvert, onPaid, onSign, onDuplicate, onEdit, 
             </div>
           </div>
           <div style={{ padding:"26px 32px" }}>
-            <div style={{ background:"#111", border:`1px solid ${C.border}`, borderRadius:10, padding:"14px 18px", marginBottom:24 }}>
+            <div style={{ background:"#F8F6F0", border:`1px solid ${C.cardBorder}`, borderRadius:10, padding:"14px 18px", marginBottom:24 }}>
               <div style={{ fontFamily:FONT_BODY, fontSize:9, color:C.gold, textTransform:"uppercase", letterSpacing:2, marginBottom:8 }}>Bill To</div>
               <div style={{ fontFamily:FONT_DISPLAY, fontSize:16, fontWeight:700, color:C.white }}>{doc.client.name}</div>
               {doc.client.projectName && <div style={{ fontFamily:FONT_BODY, fontSize:13, color:C.emerald, fontWeight:600, marginTop:2 }}>Project: {doc.client.projectName}</div>}
@@ -611,7 +627,7 @@ function Preview({ doc, onBack, onConvert, onPaid, onSign, onDuplicate, onEdit, 
                 {doc.tax>0 && <div style={{ display:"flex", justifyContent:"space-between", padding:"6px 0", fontFamily:FONT_BODY, fontSize:12, color:C.muted, borderBottom:`1px solid ${C.border}` }}>
                   <span>Tax ({doc.tax}%)</span><span>{fmt(doc.taxAmt)}</span>
                 </div>}
-                <div style={{ background:C.card, border:`1px solid ${C.cardBorder}`, borderRadius:12, padding:"16px 20px", marginTop:10, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                <div style={{ background:"#1A1A1A", border:`1px solid #333`, borderRadius:12, padding:"16px 20px", marginTop:10, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                   <div style={{ fontFamily:FONT_BODY, fontSize:9, color:C.emerald, textTransform:"uppercase", letterSpacing:2 }}>Total Due</div>
                   <div style={{ fontFamily:FONT_DISPLAY, fontSize:30, fontWeight:900, color:C.gold }}>{fmt(doc.total)}</div>
                 </div>
@@ -667,7 +683,7 @@ function DocList({ docs, onNew, onView, onConvert, onPaid, onDuplicate, trialDay
     <div style={{ maxWidth:900, margin:"0 auto", padding:"28px 16px" }}>
       {docs.length>0 && (
         <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14, marginBottom:24 }}>
-          {[{label:"Total Quoted",value:fmt(total),color:"#4A90D9",icon:"estimate"},{label:"Collected",value:fmt(paid),color:C.emerald,icon:"check"},{label:"Pending",value:fmt(pending),color:C.gold,icon:"dollar"}].map(s=>(
+          {[{label:"Total Quoted",value:fmt(total),color:C.blue,icon:"estimate"},{label:"Collected",value:fmt(paid),color:C.emerald,icon:"check"},{label:"Pending",value:fmt(pending),color:C.red,icon:"dollar"}].map(s=>(
             <div key={s.label} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"16px 20px" }}>
               <div style={{ fontFamily:FONT_BODY, fontSize:9, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:1.5, marginBottom:6, display:"flex", alignItems:"center", gap:6 }}>
                 <Icon name={s.icon} size={11} color={s.color} />{s.label}
@@ -713,15 +729,15 @@ function DocList({ docs, onNew, onView, onConvert, onPaid, onDuplicate, trialDay
       ) : filtered.length === 0 ? (
         <div style={{ textAlign:"center", padding:"40px 20px", color:C.muted, fontFamily:FONT_BODY, fontSize:13 }}>No documents match your search</div>
       ) : filtered.map(doc=>(
-        <div key={doc.id} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"16px 20px", marginBottom:10, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:12 }}>
+        <div key={doc.id} style={{ background:C.card, border:`1px solid ${C.cardBorder}`, borderRadius:12, padding:"16px 20px", marginBottom:10, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:12, boxShadow:"0 1px 4px rgba(0,0,0,0.05)" }}>
           <div>
             <div style={{ display:"flex", gap:10, alignItems:"center", marginBottom:4, flexWrap:"wrap" }}>
               <Icon name={doc.type==="Estimate"?"estimate":"invoice"} size={14} color={doc.type==="Estimate"?"#4A90D9":C.gold} />
-              <span style={{ fontFamily:FONT_DISPLAY, fontWeight:700, fontSize:15, color:C.white }}>{doc.number}</span>
+              <span style={{ fontFamily:FONT_DISPLAY, fontWeight:700, fontSize:15, color:C.ink }}>{doc.number}</span>
               <Badge status={doc.status}/>
               {doc.signature && <span style={{ padding:"2px 8px", borderRadius:99, fontSize:10, fontWeight:700, background:C.emeraldDk, color:C.emerald, border:`1px solid ${C.emeraldBd}` }}>✍️ Signed</span>}
             </div>
-            <div style={{ fontFamily:FONT_BODY, fontSize:13, fontWeight:600, color:C.white }}>{doc.client.name||"No client"}</div>
+            <div style={{ fontFamily:FONT_BODY, fontSize:13, fontWeight:600, color:C.ink }}>{doc.client.name||"No client"}</div>
             <div style={{ fontFamily:FONT_BODY, fontSize:11, color:C.muted, marginTop:2 }}>{doc.client.projectName&&`${doc.client.projectName} · `}{doc.date}</div>
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:12 }}>
@@ -838,7 +854,7 @@ function NewDoc({ onSave, onCancel, docCount, editDoc }) {
 
       <Card>
         <SectionTitle>Services & Line Items</SectionTitle>
-        <div style={{ background:"#111", border:`1px solid ${C.border}`, borderRadius:10, padding:16, marginBottom:18 }}>
+        <div style={{ background:"#F0ECE4", border:`1px solid ${C.border}`, borderRadius:10, padding:16, marginBottom:18 }}>
           <div style={{...row,marginBottom:0}}>
             <Field label="Select Service">
               <select style={{...inp,cursor:"pointer"}} value={newItem.service} onChange={e=>{const svc=services.find(s=>s.name===e.target.value);setNewItem({...newItem,service:e.target.value,price:svc?String(svc.price):""})}}>
@@ -891,7 +907,7 @@ function NewDoc({ onSave, onCancel, docCount, editDoc }) {
               <Field label="Tax (%)"><input style={{...inp,maxWidth:120}} type="number" value={tax} onChange={e=>setTax(parseFloat(e.target.value)||0)} placeholder="0"/></Field>
               <Field label="Notes / Payment Terms"><input style={inp} value={notes} onChange={e=>setNotes(e.target.value)} placeholder="e.g. Payment due upon completion. Thank you!"/></Field>
             </div>
-            <div style={{ background:C.card, border:`1px solid ${C.cardBorder}`, borderRadius:12, padding:"18px 22px", display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:16 }}>
+            <div style={{ background:"#1A1A1A", border:`1px solid #333`, borderRadius:12, padding:"18px 22px", display:"flex", justifyContent:"space-between", alignItems:"center", marginTop:16 }}>
               <div>
                 <div style={{ fontFamily:FONT_BODY, fontSize:11, color:"#4A90D9" }}>Subtotal: {fmt(subtotal)}</div>
                 {tax>0 && <div style={{ fontFamily:FONT_BODY, fontSize:11, color:C.muted }}>Tax ({tax}%): {fmt(taxAmt)}</div>}
@@ -950,7 +966,7 @@ function Onboarding({ onComplete }) {
   const isLast = step === steps.length - 1;
 
   return (
-    <div style={{ minHeight:"100vh", background:C.black, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+    <div style={{ minHeight:"100vh", background:C.surface, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
       <div style={{ maxWidth:480, width:"100%" }}>
         {/* Progress dots */}
         <div style={{ display:"flex", justifyContent:"center", gap:8, marginBottom:40 }}>
@@ -960,9 +976,9 @@ function Onboarding({ onComplete }) {
         </div>
 
         {/* Card */}
-        <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:20, padding:"48px 40px", textAlign:"center" }}>
+        <div style={{ background:C.card, border:`1px solid ${C.cardBorder}`, borderRadius:20, padding:"48px 40px", textAlign:"center", boxShadow:"0 4px 24px rgba(0,0,0,0.08)" }}>
           {/* Icon */}
-          <div style={{ width:72, height:72, background:C.card, border:`1px solid ${C.cardBorder}`, borderRadius:16, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 28px" }}>
+          <div style={{ width:72, height:72, background:C.surface, border:`1px solid ${C.cardBorder}`, borderRadius:16, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 28px" }}>
             <Icon name={s.icon} size={32} color={C.gold} />
           </div>
 
@@ -972,7 +988,7 @@ function Onboarding({ onComplete }) {
           )}
 
           {/* Title */}
-          <div style={{ fontFamily:FONT_DISPLAY, fontSize:28, fontWeight:900, color:C.white, marginBottom:8, lineHeight:1.2 }}>{s.title}</div>
+          <div style={{ fontFamily:FONT_DISPLAY, fontSize:28, fontWeight:900, color:C.ink, marginBottom:8, lineHeight:1.2 }}>{s.title}</div>
           {step === 0 && <div style={{ fontFamily:FONT_BODY, fontSize:11, color:C.muted, textTransform:"uppercase", letterSpacing:2, marginBottom:20 }}>{s.subtitle}</div>}
 
           {/* Description */}
@@ -1537,11 +1553,11 @@ function Login({ onLogin, onRegister }) {
         </div>
 
         {/* Card */}
-        <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:16, padding:"32px 28px" }}>
+        <div style={{ background:C.card, border:`1px solid ${C.cardBorder}`, borderRadius:16, padding:"32px 28px", boxShadow:"0 4px 24px rgba(0,0,0,0.08)" }}>
           {/* Tabs */}
-          <div style={{ display:"flex", gap:0, marginBottom:28, background:C.black, borderRadius:10, padding:4 }}>
+          <div style={{ display:"flex", gap:0, marginBottom:28, background:"#F0ECE4", borderRadius:10, padding:4 }}>
             {["login","register"].map(m => (
-              <button key={m} onClick={()=>{setMode(m);setError("");}} style={{ flex:1, padding:"9px 0", borderRadius:8, border:"none", cursor:"pointer", fontFamily:FONT_BODY, fontSize:12, fontWeight:700, background:mode===m?C.gold:"transparent", color:mode===m?C.ink:C.muted, transition:"all 0.15s", textTransform:"capitalize" }}>
+              <button key={m} onClick={()=>{setMode(m);setError("");}} style={{ flex:1, padding:"9px 0", borderRadius:8, border:"none", cursor:"pointer", fontFamily:FONT_BODY, fontSize:12, fontWeight:700, background:mode===m?C.gold:"transparent", color:mode===m?C.white:C.muted, transition:"all 0.15s", textTransform:"capitalize" }}>
                 {m === "login" ? "Sign In" : "Create Account"}
               </button>
             ))}
@@ -1587,7 +1603,7 @@ function Login({ onLogin, onRegister }) {
 
           {/* Error */}
           {error && (
-            <div style={{ background:"#1A0000", border:`1px solid #3A0000`, borderRadius:8, padding:"10px 14px", marginBottom:16, fontFamily:FONT_BODY, fontSize:12, color:C.danger }}>
+            <div style={{ background:C.redDk, border:`1px solid ${C.redBd}`, borderRadius:8, padding:"10px 14px", marginBottom:16, fontFamily:FONT_BODY, fontSize:12, color:C.red }}>
               {error}
             </div>
           )}
@@ -1626,22 +1642,14 @@ export default function SwiftBook() {
   const STYLES = `
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
     *{box-sizing:border-box;margin:0;padding:0;}
-    input,select{font-family:'Inter',system-ui,sans-serif;color:#FFF;}
-    input::placeholder{color:#444;}
-    select option{background:#1A1A1A;color:#FFF;}
-    textarea{font-family:'Inter',system-ui,sans-serif;color:#FFF;background:#111;border:1px solid #2A2A2A;border-radius:8px;padding:9px 13px;width:100%;}
-    textarea::placeholder{color:#444;}
-    @media print{
-      .no-print{display:none!important;}
-      body{background:white!important;color:#000!important;}
-      .print-doc{background:white!important;color:#000!important;}
-      .print-doc *{color:#000!important;border-color:#DDD!important;background:white!important;}
-      .print-doc .print-gold{color:#8B6914!important;}
-      .print-doc .print-header{background:#F8F8F8!important;border-bottom:2px solid #DDD!important;}
-      .print-doc .print-total{background:#F0F0F0!important;}
-      .print-doc .print-billtо{background:#F8F8F8!important;}
-      .print-doc .print-emerald{color:#065F46!important;}
-    }
+    body{background:#F8F6F0;color:#1A1A1A;}
+    input,select{font-family:'Inter',system-ui,sans-serif;color:#1A1A1A;}
+    input::placeholder{color:#AAA;}
+    select option{background:#FFF;color:#1A1A1A;}
+    textarea{font-family:'Inter',system-ui,sans-serif;color:#1A1A1A;background:#FFF;border:1px solid #E0DCD4;border-radius:8px;padding:9px 13px;width:100%;}
+    textarea::placeholder{color:#AAA;}
+    input:focus,select:focus{outline:2px solid #C9A84C;outline-offset:1px;}
+    @media print{.no-print{display:none!important;}body{background:white!important;}}
   `;
 
   // ── Load session on mount ──────────────────────────────────────────────────
@@ -1716,11 +1724,11 @@ export default function SwiftBook() {
 
   // ── Loading ────────────────────────────────────────────────────────────────
   if (appState === "loading") return (
-    <div style={{ minHeight:"100vh", background:C.black, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:FONT_BODY }}>
+    <div style={{ minHeight:"100vh", background:C.surface, display:"flex", alignItems:"center", justifyContent:"center", fontFamily:FONT_BODY }}>
       <style>{STYLES}</style>
       <div style={{ textAlign:"center" }}>
         <div style={{ marginBottom:20 }}><DiamondLogo size={44} /></div>
-        <div style={{ fontFamily:FONT_DISPLAY, fontSize:22, fontWeight:700, color:C.white }}>Swift<span style={{ color:C.gold }}>Book</span></div>
+        <div style={{ fontFamily:FONT_DISPLAY, fontSize:22, fontWeight:700, color:C.ink }}>Swift<span style={{ color:C.gold }}>Book</span></div>
         <div style={{ fontFamily:FONT_BODY, fontSize:12, color:C.muted, marginTop:8 }}>Loading your workspace...</div>
       </div>
     </div>
@@ -1754,7 +1762,7 @@ export default function SwiftBook() {
 
   // ── Main App ───────────────────────────────────────────────────────────────
   return (
-    <div style={{ minHeight:"100vh", background:"#111", fontFamily:FONT_BODY, color:C.white }}>
+    <div style={{ minHeight:"100vh", background:C.surface, fontFamily:FONT_BODY, color:C.ink }}>
       <style>{STYLES}</style>
       <div className="no-print">
         <HeaderFull view={view} setView={setView} docCount={docs.length} user={user} onLogout={handleLogout} />
