@@ -5,10 +5,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const STRIPE_LINK = import.meta.env.VITE_STRIPE_LINK || "https://buy.stripe.com/14A28sgf19gW3g68qU2sM00";
 
 // ─── SUPABASE CLIENT ──────────────────────────────────────────────────────────
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "https://bpwhajfukzmdpuwelbzb.supabase.co";
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJwd2hhamZ1a3ptZHB1d2VsYnpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY5NzI4ODYsImV4cCI6MjEwMjU0ODg4Nn0.XXfxWoi8TvmZp-fQBIb2jktCtunqpIp6tsV1KlO-nXw";
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ─── DB LAYER — Supabase ──────────────────────────────────────────────────────
 const DB = {
@@ -351,10 +351,10 @@ function Logo({ small }) {
     <div style={{ display:"flex", alignItems:"center", gap:10 }}>
       <DiamondLogo size={small ? 22 : 30} />
       <div>
-        <div style={{ fontFamily:FONT_DISPLAY, fontSize:small?16:22, fontWeight:900, color:C.white, letterSpacing:"-0.5px", lineHeight:1 }}>
+        <div style={{ fontFamily:FONT_DISPLAY, fontSize:small?16:22, fontWeight:900, color:"#FFFFFF", letterSpacing:"-0.5px", lineHeight:1 }}>
           Swift<span style={{ color:C.gold }}>Book</span>
         </div>
-        {!small && <div style={{ fontFamily:FONT_BODY, fontSize:8, color:C.muted, letterSpacing:"2.5px", textTransform:"uppercase", marginTop:3 }}>Quote it. Invoice it. Close it.</div>}
+        {!small && <div style={{ fontFamily:FONT_BODY, fontSize:8, color:"#888", letterSpacing:"2.5px", textTransform:"uppercase", marginTop:3 }}>Quote it. Invoice it. Close it.</div>}
       </div>
     </div>
   );
@@ -389,7 +389,7 @@ function Badge({ status }) {
 
 function Btn({ children, variant="gold", onClick, disabled, small, icon }) {
   const map = {
-    gold:    { bg:C.gold,    color:C.white, border:"none"                          },
+    gold:    { bg:C.gold,    color:C.ink, border:"none"                          },
     emerald: { bg:C.emeraldDk, color:C.emerald, border:`1px solid ${C.emeraldBd}` },
     ghost:   { bg:"#F0ECE4", color:C.muted,   border:`1px solid ${C.border}`      },
     steel:   { bg:"#EEF4FF", color:C.blue,    border:"1px solid #C8DEFF"          },
@@ -410,8 +410,8 @@ function Card({ children, style }) {
 
 function SectionTitle({ children }) {
   return (
-    <div style={{ fontFamily:FONT_DISPLAY, fontSize:13, fontWeight:700, color:C.gold, marginBottom:18, display:"flex", alignItems:"center", gap:8 }}>
-      <div style={{ width:2, height:14, background:C.gold, borderRadius:99 }} />{children}
+    <div style={{ fontFamily:FONT_DISPLAY, fontSize:13, fontWeight:700, color:C.goldDk, marginBottom:18, display:"flex", alignItems:"center", gap:8 }}>
+      <div style={{ width:3, height:14, background:C.gold, borderRadius:99 }} />{children}
     </div>
   );
 }
@@ -503,9 +503,9 @@ function SignaturePad({ onSave, onCancel, isPro }) {
   }
 
   if (!isPro) return (
-    <div style={{ background:C.black, border:`1px solid ${C.border}`, borderRadius:16, padding:"32px 28px", textAlign:"center" }}>
+    <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:16, padding:"32px 28px", textAlign:"center" }}>
       <div style={{ marginBottom:16 }}><Icon name="dollar" size={36} color={C.gold} /></div>
-      <div style={{ fontFamily:FONT_DISPLAY, fontSize:20, fontWeight:700, color:C.white, marginBottom:8 }}>Pro Feature</div>
+      <div style={{ fontFamily:FONT_DISPLAY, fontSize:20, fontWeight:700, color:C.ink, marginBottom:8 }}>Pro Feature</div>
       <div style={{ fontFamily:FONT_BODY, fontSize:13, color:C.muted, marginBottom:24, lineHeight:1.7 }}>
         Client digital signature is available on the <strong style={{ color:C.gold }}>Pro plan</strong> and above.<br/>Upgrade to unlock this feature.
       </div>
@@ -517,10 +517,10 @@ function SignaturePad({ onSave, onCancel, isPro }) {
   );
 
   return (
-    <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:16, padding:"24px", marginTop:20 }}>
-      <div style={{ fontFamily:FONT_DISPLAY, fontSize:16, fontWeight:700, color:C.white, marginBottom:4 }}>Client Signature</div>
+    <div style={{ background:C.card, border:`1px solid ${C.border}`, borderRadius:16, padding:"24px", marginTop:20, boxShadow:"0 2px 12px rgba(0,0,0,0.06)" }}>
+      <div style={{ fontFamily:FONT_DISPLAY, fontSize:16, fontWeight:700, color:C.ink, marginBottom:4 }}>Client Signature</div>
       <div style={{ fontFamily:FONT_BODY, fontSize:12, color:C.muted, marginBottom:16 }}>Sign below to approve this estimate</div>
-      <div style={{ background:"#111", border:`2px dashed ${C.border}`, borderRadius:12, overflow:"hidden", marginBottom:14, cursor:"crosshair" }}>
+      <div style={{ background:C.surface, border:`2px dashed ${C.border}`, borderRadius:12, overflow:"hidden", marginBottom:14, cursor:"crosshair" }}>
         <canvas
           ref={canvasRef}
           width={700}
@@ -584,25 +584,25 @@ function Preview({ doc, onBack, onConvert, onPaid, onSign, onDuplicate, onEdit, 
         )}
 
         <div style={{ background:C.card, borderRadius:16, overflow:"hidden", border:`1px solid ${C.cardBorder}`, boxShadow:"0 4px 24px rgba(0,0,0,0.08)" }}>
-          <div style={{ background:C.black, padding:"26px 32px", display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:20, borderBottom:`1px solid ${C.border}` }}>
+          <div style={{ background:"#1A1A1A", padding:"26px 32px", display:"flex", justifyContent:"space-between", alignItems:"flex-start", flexWrap:"wrap", gap:20, borderBottom:`1px solid #333` }}>
             <div>
               <div style={{ marginBottom:10 }}><Logo small /></div>
-              <div style={{ fontFamily:FONT_DISPLAY, fontSize:16, fontWeight:700, color:C.white }}>{doc.company.name}</div>
-              <div style={{ fontFamily:FONT_BODY, fontSize:12, color:C.muted, marginTop:2 }}>{doc.company.phone}{doc.company.email?` · ${doc.company.email}`:""}</div>
-              <div style={{ fontFamily:FONT_BODY, fontSize:12, color:C.muted }}>{doc.company.address}</div>
+              <div style={{ fontFamily:FONT_DISPLAY, fontSize:16, fontWeight:700, color:"#FFF" }}>{doc.company.name}</div>
+              <div style={{ fontFamily:FONT_BODY, fontSize:12, color:"#AAA", marginTop:2 }}>{doc.company.phone}{doc.company.email?` · ${doc.company.email}`:""}</div>
+              <div style={{ fontFamily:FONT_BODY, fontSize:12, color:"#AAA" }}>{doc.company.address}</div>
             </div>
             <div style={{ textAlign:"right" }}>
-              <div style={{ fontFamily:FONT_BODY, fontSize:9, color:C.muted, textTransform:"uppercase", letterSpacing:2 }}>{doc.type}</div>
+              <div style={{ fontFamily:FONT_BODY, fontSize:9, color:"#888", textTransform:"uppercase", letterSpacing:2 }}>{doc.type}</div>
               <div style={{ fontFamily:FONT_DISPLAY, fontSize:28, fontWeight:900, color:C.gold }}>{doc.number}</div>
-              <div style={{ fontFamily:FONT_BODY, fontSize:11, color:C.dim, marginTop:4 }}>Date: {doc.date}</div>
-              <div style={{ fontFamily:FONT_BODY, fontSize:11, color:C.dim }}>Due: {doc.due}</div>
+              <div style={{ fontFamily:FONT_BODY, fontSize:11, color:"#888", marginTop:4 }}>Date: {doc.date}</div>
+              <div style={{ fontFamily:FONT_BODY, fontSize:11, color:"#888" }}>Due: {doc.due}</div>
               <div style={{ marginTop:8 }}><Badge status={doc.status}/></div>
             </div>
           </div>
           <div style={{ padding:"26px 32px" }}>
             <div style={{ background:"#F8F6F0", border:`1px solid ${C.cardBorder}`, borderRadius:10, padding:"14px 18px", marginBottom:24 }}>
               <div style={{ fontFamily:FONT_BODY, fontSize:9, color:C.gold, textTransform:"uppercase", letterSpacing:2, marginBottom:8 }}>Bill To</div>
-              <div style={{ fontFamily:FONT_DISPLAY, fontSize:16, fontWeight:700, color:C.white }}>{doc.client.name}</div>
+              <div style={{ fontFamily:FONT_DISPLAY, fontSize:16, fontWeight:700, color:C.ink }}>{doc.client.name}</div>
               {doc.client.projectName && <div style={{ fontFamily:FONT_BODY, fontSize:13, color:C.emerald, fontWeight:600, marginTop:2 }}>Project: {doc.client.projectName}</div>}
               <div style={{ fontFamily:FONT_BODY, fontSize:12, color:C.muted, marginTop:2 }}>{doc.client.email}{doc.client.phone?` · ${doc.client.phone}`:""}</div>
               <div style={{ fontFamily:FONT_BODY, fontSize:12, color:C.muted }}>{doc.client.address}</div>
@@ -613,8 +613,8 @@ function Preview({ doc, onBack, onConvert, onPaid, onSign, onDuplicate, onEdit, 
               ))}
             </div>
             {doc.items.map((item,idx)=>(
-              <div key={item.id} style={{ display:"grid", gridTemplateColumns:"1fr 140px 110px", gap:8, padding:"10px 0", borderBottom:`1px solid #1A1A1A`, background:idx%2===0?"transparent":"#0A0A0A" }}>
-                <span style={{ fontFamily:FONT_BODY, fontSize:13, color:C.white }}>{item.name}</span>
+              <div key={item.id} style={{ display:"grid", gridTemplateColumns:"1fr 140px 110px", gap:8, padding:"10px 0", borderBottom:`1px solid ${C.border}`, background:idx%2===0?"transparent":"#FAFAF8" }}>
+                <span style={{ fontFamily:FONT_BODY, fontSize:13, color:C.ink }}>{item.name}</span>
                 <span style={{ fontFamily:FONT_BODY, fontSize:12, color:C.muted }}>{item.qty} × {fmt(item.price)}</span>
                 <span style={{ fontFamily:FONT_DISPLAY, fontSize:14, fontWeight:700, color:C.goldLt, textAlign:"right" }}>{fmt(item.qty*item.price)}</span>
               </div>
@@ -633,7 +633,7 @@ function Preview({ doc, onBack, onConvert, onPaid, onSign, onDuplicate, onEdit, 
                 </div>
               </div>
             </div>
-            {doc.notes && <div style={{ marginTop:22, padding:"14px 18px", background:"#111", border:`1px solid ${C.border}`, borderRadius:10, fontFamily:FONT_BODY, fontSize:12, color:C.muted }}><strong style={{ color:C.white }}>Notes: </strong>{doc.notes}</div>}
+            {doc.notes && <div style={{ marginTop:22, padding:"14px 18px", background:"#F8F6F0", border:`1px solid ${C.border}`, borderRadius:10, fontFamily:FONT_BODY, fontSize:12, color:C.muted }}><strong style={{ color:C.ink }}>Notes: </strong>{doc.notes}</div>}
 
             {/* Signature display */}
             {doc.signature && (
@@ -695,7 +695,7 @@ function DocList({ docs, onNew, onView, onConvert, onPaid, onDuplicate, trialDay
       )}
 
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14, flexWrap:"wrap", gap:10 }}>
-        <span style={{ fontFamily:FONT_DISPLAY, fontSize:18, fontWeight:700, color:C.white }}>All Documents</span>
+        <span style={{ fontFamily:FONT_DISPLAY, fontSize:18, fontWeight:700, color:C.ink }}>All Documents</span>
         <div style={{ display:"flex", gap:8, alignItems:"center", flexWrap:"wrap" }}>
           {/* Search */}
           <div style={{ position:"relative" }}>
@@ -722,7 +722,7 @@ function DocList({ docs, onNew, onView, onConvert, onPaid, onDuplicate, trialDay
       {docs.length===0 ? (
         <div style={{ textAlign:"center", padding:"60px 20px", border:`1px dashed ${C.border}`, borderRadius:16, background:C.surface }}>
           <div style={{ marginBottom:16 }}><DiamondLogo size={44} /></div>
-          <div style={{ fontFamily:FONT_DISPLAY, fontSize:20, fontWeight:700, color:C.white, marginBottom:8 }}>Ready to close your first job?</div>
+          <div style={{ fontFamily:FONT_DISPLAY, fontSize:20, fontWeight:700, color:C.ink, marginBottom:8 }}>Ready to close your first job?</div>
           <div style={{ fontFamily:FONT_BODY, fontSize:13, color:C.muted, marginBottom:24 }}>Create a professional estimate in under 2 minutes.</div>
           <Btn variant="gold" icon="estimate" onClick={onNew}>Create First Estimate</Btn>
         </div>
@@ -733,7 +733,7 @@ function DocList({ docs, onNew, onView, onConvert, onPaid, onDuplicate, trialDay
           <div>
             <div style={{ display:"flex", gap:10, alignItems:"center", marginBottom:4, flexWrap:"wrap" }}>
               <Icon name={doc.type==="Estimate"?"estimate":"invoice"} size={14} color={doc.type==="Estimate"?"#4A90D9":C.gold} />
-              <span style={{ fontFamily:FONT_DISPLAY, fontWeight:700, fontSize:15, color:C.ink }}>{doc.number}</span>
+              <span style={{ fontFamily:FONT_DISPLAY, fontWeight:700, fontSize:15, color:"#1A1A1A" }}>{doc.number}</span>
               <Badge status={doc.status}/>
               {doc.signature && <span style={{ padding:"2px 8px", borderRadius:99, fontSize:10, fontWeight:700, background:C.emeraldDk, color:C.emerald, border:`1px solid ${C.emeraldBd}` }}>✍️ Signed</span>}
             </div>
@@ -816,7 +816,7 @@ function NewDoc({ onSave, onCancel, docCount, editDoc }) {
               <div style={{ position:"relative" }}>
                 <div style={{ display:"flex", alignItems:"center", gap:8, ...inp, cursor:"pointer", padding:"9px 13px" }} onClick={e=>e.currentTarget.nextSibling.style.display==="none"?e.currentTarget.nextSibling.style.display="block":e.currentTarget.nextSibling.style.display="none"}>
                   <IndustryIcon industry={company.industry} size={16} />
-                  <span style={{ fontSize:13, color:C.white, flex:1 }}>{company.industry}</span>
+                  <span style={{ fontSize:13, color:C.ink, flex:1 }}>{company.industry}</span>
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="2"><polyline points="6,9 12,15 18,9"/></svg>
                 </div>
                 <div style={{ display:"none", position:"absolute", top:"100%", left:0, right:0, background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, zIndex:100, maxHeight:280, overflowY:"auto", marginTop:4 }}>
@@ -825,7 +825,7 @@ function NewDoc({ onSave, onCancel, docCount, editDoc }) {
                       onMouseEnter={e=>e.currentTarget.style.background=C.card}
                       onMouseLeave={e=>e.currentTarget.style.background=company.industry===k?C.card:"transparent"}>
                       <IndustryIcon industry={k} size={16} />
-                      <span style={{ fontSize:13, color:C.white }}>{k}</span>
+                      <span style={{ fontSize:13, color:C.ink }}>{k}</span>
                     </div>
                   ))}
                 </div>
@@ -883,7 +883,7 @@ function NewDoc({ onSave, onCancel, docCount, editDoc }) {
             </div>
             {items.map(item=>(
               <div key={item.id} style={{ display:"grid", gridTemplateColumns:"1fr 90px 180px 110px 28px", gap:8, alignItems:"center", padding:"10px 0", borderBottom:`1px solid #1A1A1A` }}>
-                <span style={{ fontFamily:FONT_BODY, fontSize:13, color:C.white }}>{item.name}</span>
+                <span style={{ fontFamily:FONT_BODY, fontSize:13, color:C.ink }}>{item.name}</span>
                 <span style={{ fontFamily:FONT_BODY, fontSize:11, color:C.muted }}>{item.unit}</span>
                 <div style={{ display:"flex", gap:4, alignItems:"center" }}>
                   <input style={{...inp,width:52,padding:"5px 8px",fontSize:12}} type="number" value={item.qty} onChange={e=>setItems(items.map(i=>i.id===item.id?{...i,qty:parseFloat(e.target.value)||0}:i))}/>
@@ -1011,7 +1011,7 @@ function Onboarding({ onComplete }) {
               {["Company name & industry","Phone, email & address","Upload your logo","Pre-loaded service catalog"].map(f=>(
                 <div key={f} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderBottom:`1px solid ${C.border}` }}>
                   <Icon name="check" size={14} color={C.emerald} />
-                  <span style={{ fontFamily:FONT_BODY, fontSize:13, color:C.white }}>{f}</span>
+                  <span style={{ fontFamily:FONT_BODY, fontSize:13, color:C.ink }}>{f}</span>
                 </div>
               ))}
             </div>
@@ -1021,7 +1021,7 @@ function Onboarding({ onComplete }) {
               {["12 industries available","Pre-loaded pricing catalog","Edit quantities & prices","Real-time cost meter"].map(f=>(
                 <div key={f} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderBottom:`1px solid ${C.border}` }}>
                   <Icon name="check" size={14} color={C.emerald} />
-                  <span style={{ fontFamily:FONT_BODY, fontSize:13, color:C.white }}>{f}</span>
+                  <span style={{ fontFamily:FONT_BODY, fontSize:13, color:C.ink }}>{f}</span>
                 </div>
               ))}
             </div>
@@ -1031,7 +1031,7 @@ function Onboarding({ onComplete }) {
               {["Convert estimate → invoice in 1 click","Client digital signature","Mark as paid instantly","Print or save as PDF"].map(f=>(
                 <div key={f} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderBottom:`1px solid ${C.border}` }}>
                   <Icon name="check" size={14} color={C.emerald} />
-                  <span style={{ fontFamily:FONT_BODY, fontSize:13, color:C.white }}>{f}</span>
+                  <span style={{ fontFamily:FONT_BODY, fontSize:13, color:C.ink }}>{f}</span>
                 </div>
               ))}
             </div>
@@ -1101,7 +1101,7 @@ function Settings({ onBack }) {
         <Btn variant="ghost" icon="back" onClick={onBack}>Back</Btn>
       </div>
 
-      <div style={{ fontFamily:FONT_DISPLAY, fontSize:22, fontWeight:700, color:C.white, marginBottom:24 }}>Settings</div>
+      <div style={{ fontFamily:FONT_DISPLAY, fontSize:22, fontWeight:700, color:C.ink, marginBottom:24 }}>Settings</div>
 
       {/* Tabs */}
       <div style={{ display:"flex", gap:0, borderBottom:`1px solid ${C.border}`, marginBottom:24 }}>
@@ -1123,7 +1123,7 @@ function Settings({ onBack }) {
                 {logo ? <img src={logo} alt="logo" style={{ width:"100%", height:"100%", objectFit:"contain" }} /> : <Icon name="building" size={28} color={C.muted} />}
               </div>
               <div>
-                <div style={{ fontFamily:FONT_BODY, fontSize:13, color:C.white, marginBottom:8, fontWeight:600 }}>Upload your company logo</div>
+                <div style={{ fontFamily:FONT_BODY, fontSize:13, color:C.ink, marginBottom:8, fontWeight:600 }}>Upload your company logo</div>
                 <div style={{ fontFamily:FONT_BODY, fontSize:11, color:C.muted, marginBottom:12 }}>PNG or JPG — appears on all your documents</div>
                 <label style={{ padding:"8px 18px", background:C.gold, color:C.ink, borderRadius:8, fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:FONT_BODY }}>
                   Choose File
@@ -1142,7 +1142,7 @@ function Settings({ onBack }) {
                 <div style={{ position:"relative" }}>
                   <div style={{ display:"flex", alignItems:"center", gap:8, ...inp, cursor:"pointer" }} onClick={e=>{const d=e.currentTarget.nextSibling;d.style.display=d.style.display==="none"?"block":"none"}}>
                     <IndustryIcon industry={company.industry} size={16} />
-                    <span style={{ fontSize:13, color:C.white, flex:1 }}>{company.industry}</span>
+                    <span style={{ fontSize:13, color:C.ink, flex:1 }}>{company.industry}</span>
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="2"><polyline points="6,9 12,15 18,9"/></svg>
                   </div>
                   <div style={{ display:"none", position:"absolute", top:"100%", left:0, right:0, background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, zIndex:100, maxHeight:200, overflowY:"auto", marginTop:4 }}>
@@ -1151,7 +1151,7 @@ function Settings({ onBack }) {
                         onMouseEnter={e=>e.currentTarget.style.background=C.card}
                         onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                         <IndustryIcon industry={k} size={16} />
-                        <span style={{ fontSize:13, color:C.white }}>{k}</span>
+                        <span style={{ fontSize:13, color:C.ink }}>{k}</span>
                       </div>
                     ))}
                   </div>
@@ -1189,7 +1189,7 @@ function Settings({ onBack }) {
                     <Icon name="dollar" size={18} color={p.color} />
                   </div>
                   <div>
-                    <div style={{ fontFamily:FONT_DISPLAY, fontSize:16, fontWeight:700, color:C.white }}>{p.label}</div>
+                    <div style={{ fontFamily:FONT_DISPLAY, fontSize:16, fontWeight:700, color:C.ink }}>{p.label}</div>
                     <div style={{ fontFamily:FONT_BODY, fontSize:11, color:C.muted, marginTop:2 }}>{p.users} · Unlimited estimates & invoices</div>
                   </div>
                 </div>
@@ -1204,13 +1204,13 @@ function Settings({ onBack }) {
 
           {/* Cancel */}
           <div style={{ marginTop:32, paddingTop:24, borderTop:`1px solid ${C.border}` }}>
-            <div style={{ fontFamily:FONT_DISPLAY, fontSize:15, fontWeight:700, color:C.white, marginBottom:6 }}>Cancel Subscription</div>
+            <div style={{ fontFamily:FONT_DISPLAY, fontSize:15, fontWeight:700, color:C.ink, marginBottom:6 }}>Cancel Subscription</div>
             <div style={{ fontFamily:FONT_BODY, fontSize:12, color:C.muted, marginBottom:14 }}>You will lose access at the end of your current billing period. This action cannot be undone.</div>
             {!showCancel ? (
               <Btn variant="danger" onClick={()=>setShowCancel(true)}>Cancel Subscription</Btn>
             ) : (
               <div style={{ background:"#1A0000", border:`1px solid #3A0000`, borderRadius:12, padding:"18px 20px" }}>
-                <div style={{ fontFamily:FONT_BODY, fontSize:13, color:C.white, marginBottom:14, fontWeight:600, display:"flex", alignItems:"center", gap:8 }}>
+                <div style={{ fontFamily:FONT_BODY, fontSize:13, color:C.ink, marginBottom:14, fontWeight:600, display:"flex", alignItems:"center", gap:8 }}>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={C.danger} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
                   Are you sure you want to cancel?
                 </div>
@@ -1257,7 +1257,7 @@ function Settings({ onBack }) {
               { q:"How do I change my subscription plan?", a:"Go to Settings → Subscription → select your new plan and tap Upgrade." },
             ].map((item,i) => (
               <div key={i} style={{ padding:"14px 0", borderBottom:i<4?`1px solid ${C.border}`:"none" }}>
-                <div style={{ fontFamily:FONT_BODY, fontSize:13, fontWeight:700, color:C.white, marginBottom:4 }}>{item.q}</div>
+                <div style={{ fontFamily:FONT_BODY, fontSize:13, fontWeight:700, color:C.ink, marginBottom:4 }}>{item.q}</div>
                 <div style={{ fontFamily:FONT_BODY, fontSize:12, color:C.muted, lineHeight:1.6 }}>{item.a}</div>
               </div>
             ))}
@@ -1292,7 +1292,7 @@ function CRM({ docs, onBack, onView }) {
         <Btn variant="ghost" icon="back" onClick={()=>window.history.back()}>Back</Btn>
       </div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24, flexWrap:"wrap", gap:12 }}>
-        <div style={{ fontFamily:FONT_DISPLAY, fontSize:22, fontWeight:700, color:C.white }}>Clients</div>
+        <div style={{ fontFamily:FONT_DISPLAY, fontSize:22, fontWeight:700, color:C.ink }}>Clients</div>
         <div style={{ display:"flex", gap:10, alignItems:"center" }}>
           <div style={{ position:"relative" }}>
             <input style={{ ...inp, paddingLeft:36, width:220 }} placeholder="Search clients..." value={search} onChange={e=>setSearch(e.target.value)} />
@@ -1306,7 +1306,7 @@ function CRM({ docs, onBack, onView }) {
       {clients.length === 0 ? (
         <div style={{ textAlign:"center", padding:"60px 20px", border:`1px dashed ${C.border}`, borderRadius:16, background:C.surface }}>
           <div style={{ marginBottom:16 }}><Icon name="building" size={40} color={C.muted} /></div>
-          <div style={{ fontFamily:FONT_DISPLAY, fontSize:18, fontWeight:700, color:C.white, marginBottom:8 }}>No clients yet</div>
+          <div style={{ fontFamily:FONT_DISPLAY, fontSize:18, fontWeight:700, color:C.ink, marginBottom:8 }}>No clients yet</div>
           <div style={{ fontFamily:FONT_BODY, fontSize:13, color:C.muted }}>Create your first estimate to add a client.</div>
         </div>
       ) : clients.map((client, i) => (
@@ -1318,7 +1318,7 @@ function CRM({ docs, onBack, onView }) {
                   {client.name?.[0]?.toUpperCase() || "?"}
                 </div>
                 <div>
-                  <div style={{ fontFamily:FONT_DISPLAY, fontSize:15, fontWeight:700, color:C.white }}>{client.name}</div>
+                  <div style={{ fontFamily:FONT_DISPLAY, fontSize:15, fontWeight:700, color:C.ink }}>{client.name}</div>
                   <div style={{ fontFamily:FONT_BODY, fontSize:11, color:C.muted }}>{client.email}{client.phone?` · ${client.phone}`:""}</div>
                 </div>
               </div>
@@ -1346,7 +1346,7 @@ function CRM({ docs, onBack, onView }) {
             ].map(s => (
               <div key={s.label}>
                 <div style={{ fontFamily:FONT_BODY, fontSize:9, color:C.muted, textTransform:"uppercase", letterSpacing:1 }}>{s.label}</div>
-                <div style={{ fontFamily:FONT_DISPLAY, fontSize:16, fontWeight:700, color:C.white }}>{s.value}</div>
+                <div style={{ fontFamily:FONT_DISPLAY, fontSize:16, fontWeight:700, color:C.ink }}>{s.value}</div>
               </div>
             ))}
           </div>
@@ -1396,12 +1396,12 @@ function Schedule({ docs, onBack, onView }) {
         <Btn variant="ghost" icon="back" onClick={()=>window.history.back()}>Back</Btn>
       </div>
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:24 }}>
-        <div style={{ fontFamily:FONT_DISPLAY, fontSize:22, fontWeight:700, color:C.white }}>Schedule</div>
+        <div style={{ fontFamily:FONT_DISPLAY, fontSize:22, fontWeight:700, color:C.ink }}>Schedule</div>
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <button onClick={()=>setCurrentDate(new Date(year, month-1, 1))} style={{ width:32, height:32, background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
             <Icon name="back" size={14} color={C.muted} />
           </button>
-          <div style={{ fontFamily:FONT_DISPLAY, fontSize:16, fontWeight:700, color:C.white, minWidth:160, textAlign:"center" }}>{monthNames[month]} {year}</div>
+          <div style={{ fontFamily:FONT_DISPLAY, fontSize:16, fontWeight:700, color:C.ink, minWidth:160, textAlign:"center" }}>{monthNames[month]} {year}</div>
           <button onClick={()=>setCurrentDate(new Date(year, month+1, 1))} style={{ width:32, height:32, background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
             <Icon name="arrow" size={14} color={C.muted} />
           </button>
@@ -1456,7 +1456,7 @@ function Schedule({ docs, onBack, onView }) {
       }).map(doc => (
         <div key={doc.id} onClick={()=>onView(doc)} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:"12px 16px", marginBottom:8, display:"flex", justifyContent:"space-between", alignItems:"center", cursor:"pointer" }}>
           <div>
-            <div style={{ fontFamily:FONT_DISPLAY, fontSize:13, fontWeight:700, color:C.white }}>{doc.client.name} — {doc.number}</div>
+            <div style={{ fontFamily:FONT_DISPLAY, fontSize:13, fontWeight:700, color:C.ink }}>{doc.client.name} — {doc.number}</div>
             <div style={{ fontFamily:FONT_BODY, fontSize:11, color:C.muted }}>Due: {doc.due}</div>
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:10 }}>
@@ -1509,13 +1509,16 @@ function HeaderFull({ view, setView, docCount, user, onLogout }) {
 
 // ─── LOGIN SCREEN ─────────────────────────────────────────────────────────────
 function Login({ onLogin, onRegister }) {
-  const [mode, setMode]       = useState("login"); // "login" | "register"
-  const [email, setEmail]     = useState("");
-  const [password, setPassword] = useState("");
-  const [company, setCompany] = useState("");
-  const [industry, setIndustry] = useState(Object.keys(INDUSTRIES)[0]);
-  const [error, setError]     = useState("");
-  const [loading, setLoading] = useState(false);
+  const [mode, setMode]             = useState("login");
+  const [email, setEmail]           = useState("");
+  const [password, setPassword]     = useState("");
+  const [company, setCompany]       = useState("");
+  const [industry, setIndustry]     = useState(Object.keys(INDUSTRIES)[0]);
+  const [error, setError]           = useState("");
+  const [loading, setLoading]       = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotSent, setForgotSent] = useState(false);
 
   async function handleLogin() {
     if (!email || !password) { setError("Please fill in all fields."); return; }
@@ -1536,94 +1539,144 @@ function Login({ onLogin, onRegister }) {
     onRegister(user);
   }
 
+  const fieldStyle = { width:"100%", padding:"12px 14px", borderRadius:10, border:"1.5px solid #DDD8D0", background:"#FFF", color:C.ink, fontSize:14, fontFamily:FONT_BODY };
+  const labelStyle = { display:"block", fontFamily:FONT_BODY, fontSize:11, fontWeight:700, color:"#666", textTransform:"uppercase", letterSpacing:1, marginBottom:6 };
+
+  // Forgot password screen
+  if (showForgot) return (
+    <div style={{ minHeight:"100vh", background:"#FFF", display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+      <div style={{ maxWidth:380, width:"100%" }}>
+        <div style={{ textAlign:"center", marginBottom:32 }}>
+          <DiamondLogo size={32} />
+          <div style={{ fontFamily:FONT_DISPLAY, fontSize:24, fontWeight:900, color:C.ink, marginTop:10 }}>Swift<span style={{ color:C.gold }}>Book</span></div>
+        </div>
+        {forgotSent ? (
+          <div style={{ background:"#F0FDF4", border:"1px solid #BBF7D0", borderRadius:14, padding:28, textAlign:"center" }}>
+            <div style={{ fontSize:40, marginBottom:12 }}>✉️</div>
+            <div style={{ fontFamily:FONT_DISPLAY, fontSize:20, fontWeight:700, color:C.ink, marginBottom:8 }}>Check your email</div>
+            <div style={{ fontFamily:FONT_BODY, fontSize:13, color:C.muted, marginBottom:20, lineHeight:1.6 }}>
+              We sent a password reset link to<br/><strong style={{ color:C.ink }}>{forgotEmail}</strong>
+            </div>
+            <button onClick={()=>{setShowForgot(false);setForgotSent(false);}} style={{ fontFamily:FONT_BODY, fontSize:13, color:C.gold, background:"none", border:"none", cursor:"pointer", fontWeight:700 }}>
+              ← Back to Sign In
+            </button>
+          </div>
+        ) : (
+          <>
+            <div style={{ fontFamily:FONT_DISPLAY, fontSize:22, fontWeight:700, color:C.ink, marginBottom:6 }}>Reset password</div>
+            <div style={{ fontFamily:FONT_BODY, fontSize:13, color:C.muted, marginBottom:24, lineHeight:1.6 }}>Enter your email and we'll send you a link to reset your password.</div>
+            <div style={{ marginBottom:16 }}>
+              <label style={labelStyle}>Email address</label>
+              <input style={fieldStyle} type="email" value={forgotEmail} onChange={e=>setForgotEmail(e.target.value)} placeholder="you@company.com" />
+            </div>
+            <button onClick={()=>forgotEmail&&setForgotSent(true)} style={{ width:"100%", padding:"13px", borderRadius:10, border:"none", cursor:"pointer", fontFamily:FONT_BODY, fontSize:14, fontWeight:800, background:C.gold, color:"#FFF", marginBottom:12 }}>
+              Send Reset Link →
+            </button>
+            <button onClick={()=>setShowForgot(false)} style={{ width:"100%", padding:"11px", borderRadius:10, border:`1px solid ${C.border}`, cursor:"pointer", fontFamily:FONT_BODY, fontSize:13, fontWeight:600, background:"transparent", color:C.muted }}>
+              Back to Sign In
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+
   return (
-    <div style={{ minHeight:"100vh", background:C.black, display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
-      <div style={{ maxWidth:420, width:"100%" }}>
-        {/* Logo */}
-        <div style={{ textAlign:"center", marginBottom:36 }}>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, marginBottom:8 }}>
-            <DiamondLogo size={36} />
-            <div style={{ fontFamily:FONT_DISPLAY, fontSize:28, fontWeight:900, color:C.white }}>
+    <div style={{ minHeight:"100vh", background:"#FFF", display:"flex", alignItems:"center", justifyContent:"center", padding:24 }}>
+      <div style={{ maxWidth:380, width:"100%" }}>
+
+        {/* Logo — centered like Jobber */}
+        <div style={{ textAlign:"center", marginBottom:32 }}>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:10, marginBottom:6 }}>
+            <DiamondLogo size={30} />
+            <div style={{ fontFamily:FONT_DISPLAY, fontSize:26, fontWeight:900, color:C.ink }}>
               Swift<span style={{ color:C.gold }}>Book</span>
             </div>
           </div>
-          <div style={{ fontFamily:FONT_BODY, fontSize:10, color:C.muted, textTransform:"uppercase", letterSpacing:2 }}>
+          <div style={{ fontFamily:FONT_BODY, fontSize:10, color:C.muted, letterSpacing:2, textTransform:"uppercase" }}>
             Quote it. Invoice it. Close it.
           </div>
         </div>
 
-        {/* Card */}
-        <div style={{ background:C.card, border:`1px solid ${C.cardBorder}`, borderRadius:16, padding:"32px 28px", boxShadow:"0 4px 24px rgba(0,0,0,0.08)" }}>
-          {/* Tabs */}
-          <div style={{ display:"flex", gap:0, marginBottom:28, background:"#F0ECE4", borderRadius:10, padding:4 }}>
-            {["login","register"].map(m => (
-              <button key={m} onClick={()=>{setMode(m);setError("");}} style={{ flex:1, padding:"9px 0", borderRadius:8, border:"none", cursor:"pointer", fontFamily:FONT_BODY, fontSize:12, fontWeight:700, background:mode===m?C.gold:"transparent", color:mode===m?C.white:C.muted, transition:"all 0.15s", textTransform:"capitalize" }}>
-                {m === "login" ? "Sign In" : "Create Account"}
-              </button>
-            ))}
-          </div>
-
-          {/* Fields */}
-          {mode === "register" && (
-            <>
-              <div style={{ marginBottom:12 }}>
-                <div style={{ fontFamily:FONT_BODY, fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:1, marginBottom:5 }}>Company Name</div>
-                <input style={inp} value={company} onChange={e=>setCompany(e.target.value)} placeholder="Your business name" />
-              </div>
-              <div style={{ marginBottom:12 }}>
-                <div style={{ fontFamily:FONT_BODY, fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:1, marginBottom:5 }}>Industry</div>
-                <div style={{ position:"relative" }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:8, ...inp, cursor:"pointer" }} onClick={e=>{const d=e.currentTarget.nextSibling;d.style.display=d.style.display==="none"?"block":"none"}}>
-                    <IndustryIcon industry={industry} size={16} />
-                    <span style={{ fontSize:13, color:C.white, flex:1 }}>{industry}</span>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="2"><polyline points="6,9 12,15 18,9"/></svg>
-                  </div>
-                  <div style={{ display:"none", position:"absolute", top:"100%", left:0, right:0, background:C.surface, border:`1px solid ${C.border}`, borderRadius:8, zIndex:100, maxHeight:200, overflowY:"auto", marginTop:4 }}>
-                    {Object.keys(INDUSTRIES).map(k=>(
-                      <div key={k} onClick={e=>{setIndustry(k);e.currentTarget.parentNode.style.display="none";}} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", cursor:"pointer", borderBottom:`1px solid ${C.border}` }}
-                        onMouseEnter={e=>e.currentTarget.style.background=C.card}
-                        onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-                        <IndustryIcon industry={k} size={16} />
-                        <span style={{ fontSize:13, color:C.white }}>{k}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-          <div style={{ marginBottom:12 }}>
-            <div style={{ fontFamily:FONT_BODY, fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:1, marginBottom:5 }}>Email</div>
-            <input style={inp} type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@company.com" />
-          </div>
-          <div style={{ marginBottom:20 }}>
-            <div style={{ fontFamily:FONT_BODY, fontSize:10, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:1, marginBottom:5 }}>Password</div>
-            <input style={inp} type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Min. 6 characters" />
-          </div>
-
-          {/* Error */}
-          {error && (
-            <div style={{ background:C.redDk, border:`1px solid ${C.redBd}`, borderRadius:8, padding:"10px 14px", marginBottom:16, fontFamily:FONT_BODY, fontSize:12, color:C.red }}>
-              {error}
-            </div>
-          )}
-
-          {/* CTA */}
-          <button onClick={mode==="login"?handleLogin:handleRegister} disabled={loading} style={{ width:"100%", padding:"13px 24px", borderRadius:10, border:"none", cursor:loading?"not-allowed":"pointer", fontFamily:FONT_BODY, fontSize:14, fontWeight:800, background:loading?C.border:C.gold, color:loading?C.muted:C.ink, transition:"all 0.15s" }}>
-            {loading ? "Please wait..." : mode==="login" ? "Sign In →" : "Create Account →"}
-          </button>
-
-          {/* Plan info on register */}
-          {mode === "register" && (
-            <div style={{ marginTop:16, padding:"12px 14px", background:C.card, border:`1px solid ${C.cardBorder}`, borderRadius:8, fontSize:11, color:C.muted, textAlign:"center", display:"flex", alignItems:"center", justifyContent:"center", gap:8 }}>
-              <Icon name="check" size={13} color={C.emerald} />
-              <span>Start free — no credit card required<br/><span style={{ color:C.gold }}>14-day trial included</span></span>
-            </div>
-          )}
+        {/* Tab switcher */}
+        <div style={{ display:"flex", gap:0, marginBottom:24, background:"#F0ECE4", borderRadius:10, padding:4 }}>
+          {["login","register"].map(m => (
+            <button key={m} onClick={()=>{setMode(m);setError("");}} style={{ flex:1, padding:"10px 0", borderRadius:8, border:"none", cursor:"pointer", fontFamily:FONT_BODY, fontSize:13, fontWeight:700, background:mode===m?C.gold:"transparent", color:mode===m?"#FFF":C.muted, transition:"all 0.15s" }}>
+              {m === "login" ? "Sign In" : "Create Account"}
+            </button>
+          ))}
         </div>
 
-        {/* Footer */}
-        <div style={{ textAlign:"center", marginTop:20, fontFamily:FONT_BODY, fontSize:10, color:C.dim }}>
+        {/* Register fields */}
+        {mode === "register" && (
+          <>
+            <div style={{ marginBottom:14 }}>
+              <label style={labelStyle}>Company Name</label>
+              <input style={fieldStyle} value={company} onChange={e=>setCompany(e.target.value)} placeholder="Your business name" />
+            </div>
+            <div style={{ marginBottom:14 }}>
+              <label style={labelStyle}>Industry</label>
+              <div style={{ position:"relative" }}>
+                <div style={{ ...fieldStyle, display:"flex", alignItems:"center", gap:8, cursor:"pointer" }} onClick={e=>{const d=e.currentTarget.nextSibling;d.style.display=d.style.display==="none"?"block":"none"}}>
+                  <IndustryIcon industry={industry} size={16} />
+                  <span style={{ fontSize:14, color:C.ink, flex:1 }}>{industry}</span>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={C.muted} strokeWidth="2"><polyline points="6,9 12,15 18,9"/></svg>
+                </div>
+                <div style={{ display:"none", position:"absolute", top:"100%", left:0, right:0, background:"#FFF", border:`1px solid ${C.border}`, borderRadius:10, zIndex:100, maxHeight:200, overflowY:"auto", marginTop:4, boxShadow:"0 8px 24px rgba(0,0,0,0.12)" }}>
+                  {Object.keys(INDUSTRIES).map(k=>(
+                    <div key={k} onClick={e=>{setIndustry(k);e.currentTarget.parentNode.style.display="none";}} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 14px", cursor:"pointer", borderBottom:`1px solid #F8F6F0` }}
+                      onMouseEnter={e=>e.currentTarget.style.background="#F8F6F0"}
+                      onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                      <IndustryIcon industry={k} size={16} />
+                      <span style={{ fontSize:13, color:C.ink, fontFamily:FONT_BODY }}>{k}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        <div style={{ marginBottom:14 }}>
+          <label style={labelStyle}>Email address</label>
+          <input style={fieldStyle} type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@company.com" />
+        </div>
+
+        <div style={{ marginBottom: mode==="login" ? 6 : 20 }}>
+          <label style={labelStyle}>Password</label>
+          <input style={fieldStyle} type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="Min. 6 characters" />
+        </div>
+
+        {/* Forgot password link */}
+        {mode === "login" && (
+          <div style={{ textAlign:"right", marginBottom:20 }}>
+            <button onClick={()=>setShowForgot(true)} style={{ fontFamily:FONT_BODY, fontSize:12, color:C.gold, background:"none", border:"none", cursor:"pointer", fontWeight:600 }}>
+              Forgot password?
+            </button>
+          </div>
+        )}
+
+        {/* Error */}
+        {error && (
+          <div style={{ background:C.redDk, border:`1px solid ${C.redBd}`, borderRadius:8, padding:"10px 14px", marginBottom:14, fontFamily:FONT_BODY, fontSize:12, color:C.red }}>
+            {error}
+          </div>
+        )}
+
+        {/* CTA button */}
+        <button onClick={mode==="login"?handleLogin:handleRegister} disabled={loading} style={{ width:"100%", padding:"14px", borderRadius:10, border:"none", cursor:loading?"not-allowed":"pointer", fontFamily:FONT_BODY, fontSize:15, fontWeight:800, background:loading?"#DDD":C.gold, color:"#FFF", transition:"all 0.15s", marginBottom:16 }}>
+          {loading ? "Please wait..." : mode==="login" ? "Sign In →" : "Create Account →"}
+        </button>
+
+        {/* Free trial note */}
+        {mode === "register" && (
+          <div style={{ padding:"12px 14px", background:"#FFFBF0", border:`1px solid #F0DFA0`, borderRadius:8, fontSize:12, color:C.muted, textAlign:"center", fontFamily:FONT_BODY }}>
+            Start free — no credit card required
+            <br/><span style={{ color:C.goldLt, fontWeight:700 }}>14-day trial included</span>
+          </div>
+        )}
+
+        <div style={{ textAlign:"center", marginTop:24, fontFamily:FONT_BODY, fontSize:11, color:C.muted }}>
           getswiftbook.app · Your jobs. Your money.
         </div>
       </div>
@@ -1642,13 +1695,15 @@ export default function SwiftBook() {
   const STYLES = `
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
     *{box-sizing:border-box;margin:0;padding:0;}
-    body{background:#F8F6F0;color:#1A1A1A;}
-    input,select{font-family:'Inter',system-ui,sans-serif;color:#1A1A1A;}
-    input::placeholder{color:#AAA;}
+    html,body{background:#F8F6F0;color:#1A1A1A;}
+    input,select,textarea{font-family:'Inter',system-ui,sans-serif;color:#1A1A1A;outline:none;}
+    input::placeholder,textarea::placeholder{color:#AAA;}
+    input:focus,select:focus,textarea:focus{border-color:#C9A84C!important;}
     select option{background:#FFF;color:#1A1A1A;}
-    textarea{font-family:'Inter',system-ui,sans-serif;color:#1A1A1A;background:#FFF;border:1px solid #E0DCD4;border-radius:8px;padding:9px 13px;width:100%;}
-    textarea::placeholder{color:#AAA;}
-    input:focus,select:focus{outline:2px solid #C9A84C;outline-offset:1px;}
+    button{font-family:'Inter',system-ui,sans-serif;}
+    ::-webkit-scrollbar{width:5px;}
+    ::-webkit-scrollbar-track{background:#F0ECE4;}
+    ::-webkit-scrollbar-thumb{background:#DDD8D0;border-radius:99px;}
     @media print{.no-print{display:none!important;}body{background:white!important;}}
   `;
 
@@ -1768,11 +1823,11 @@ export default function SwiftBook() {
         <HeaderFull view={view} setView={setView} docCount={docs.length} user={user} onLogout={handleLogout} />
         {/* Trial banner */}
         {!isTrialExpired && trialDaysLeft <= 7 && trialDaysLeft > 0 && (
-          <div style={{ background:`linear-gradient(90deg, #1A1A00, #2A2200)`, borderBottom:`1px solid #3A3000`, padding:"10px 28px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-            <div style={{ fontFamily:FONT_BODY, fontSize:12, color:C.goldLt }}>
+          <div style={{ background:"#FFFBF0", borderBottom:`1px solid #F0DFA0`, padding:"10px 28px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+            <div style={{ fontFamily:FONT_BODY, fontSize:12, color:C.goldDk }}>
               ⚡ <strong>{trialDaysLeft} days left</strong> on your free trial
             </div>
-            <button onClick={()=>window.open(STRIPE_LINK, '_blank')} style={{ padding:"5px 14px", background:C.gold, color:C.ink, border:"none", borderRadius:6, fontSize:11, fontWeight:800, cursor:"pointer", fontFamily:FONT_BODY }}>
+            <button onClick={()=>window.open(STRIPE_LINK, '_blank')} style={{ padding:"5px 14px", background:C.gold, color:"#FFF", border:"none", borderRadius:6, fontSize:11, fontWeight:800, cursor:"pointer", fontFamily:FONT_BODY }}>
               Subscribe Now →
             </button>
           </div>
@@ -1801,7 +1856,7 @@ export default function SwiftBook() {
 // ─── PRICING SCREEN ───────────────────────────────────────────────────────────
 function Pricing({ onBack, expired }) {
   return (
-    <div style={{ minHeight:"100vh", background:C.black, padding:"40px 16px" }}>
+    <div style={{ minHeight:"100vh", background:C.surface, padding:"40px 16px" }}>
       <div style={{ maxWidth:560, margin:"0 auto" }}>
 
         {!expired && (
@@ -1817,7 +1872,7 @@ function Pricing({ onBack, expired }) {
               <span style={{ fontFamily:FONT_BODY, fontSize:13, color:C.gold }}>Your 14-day free trial has ended</span>
             </div>
           )}
-          <div style={{ fontFamily:FONT_DISPLAY, fontSize:32, fontWeight:900, color:C.white, marginBottom:8, marginTop:16 }}>
+          <div style={{ fontFamily:FONT_DISPLAY, fontSize:32, fontWeight:900, color:C.ink, marginBottom:8, marginTop:16 }}>
             One plan. Everything included.
           </div>
           <div style={{ fontFamily:FONT_BODY, fontSize:14, color:C.muted }}>
@@ -1831,7 +1886,7 @@ function Pricing({ onBack, expired }) {
             EVERYTHING INCLUDED
           </div>
 
-          <div style={{ fontFamily:FONT_DISPLAY, fontSize:22, fontWeight:700, color:C.white, marginBottom:8 }}>SwiftBook</div>
+          <div style={{ fontFamily:FONT_DISPLAY, fontSize:22, fontWeight:700, color:C.ink, marginBottom:8 }}>SwiftBook</div>
 
           <div style={{ display:"flex", alignItems:"baseline", justifyContent:"center", gap:4, marginBottom:6 }}>
             <span style={{ fontFamily:FONT_DISPLAY, fontSize:52, fontWeight:900, color:C.gold }}>$29</span>
@@ -1860,7 +1915,7 @@ function Pricing({ onBack, expired }) {
             ].map(f => (
               <div key={f} style={{ display:"flex", alignItems:"center", gap:10, padding:"7px 0", borderBottom:`1px solid ${C.border}` }}>
                 <Icon name="check" size={14} color={C.emerald} />
-                <span style={{ fontFamily:FONT_BODY, fontSize:13, color:C.white }}>{f}</span>
+                <span style={{ fontFamily:FONT_BODY, fontSize:13, color:C.ink }}>{f}</span>
               </div>
             ))}
           </div>
@@ -1880,7 +1935,7 @@ function Pricing({ onBack, expired }) {
           <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:C.surface, border:`1px solid ${C.border}`, borderRadius:10, padding:"10px 18px" }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={C.emerald} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             <span style={{ fontFamily:FONT_BODY, fontSize:11, color:C.muted }}>Secured by </span>
-            <span style={{ fontFamily:FONT_BODY, fontSize:11, color:C.white, fontWeight:700 }}>Stripe</span>
+            <span style={{ fontFamily:FONT_BODY, fontSize:11, color:C.ink, fontWeight:700 }}>Stripe</span>
             <span style={{ fontFamily:FONT_BODY, fontSize:11, color:C.muted }}>· 256-bit SSL</span>
           </div>
         </div>
@@ -1894,7 +1949,7 @@ function Pricing({ onBack, expired }) {
             { q:"Is my data secure?", a:"Yes. All data is encrypted and stored securely. Payments processed by Stripe." },
           ].map((item, i) => (
             <div key={i} style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, padding:"16px 20px", marginBottom:10 }}>
-              <div style={{ fontFamily:FONT_DISPLAY, fontSize:14, fontWeight:700, color:C.white, marginBottom:6 }}>{item.q}</div>
+              <div style={{ fontFamily:FONT_DISPLAY, fontSize:14, fontWeight:700, color:C.ink, marginBottom:6 }}>{item.q}</div>
               <div style={{ fontFamily:FONT_BODY, fontSize:12, color:C.muted, lineHeight:1.6 }}>{item.a}</div>
             </div>
           ))}
